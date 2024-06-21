@@ -1,12 +1,13 @@
-package com.roczyno.bidding.app.api.respond;
+package com.roczyno.bidding.app.api.response;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public record AuctionResponse(
         String title,
         LocalDate startDate,
         LocalDate endDate,
-        int timeLeft,
+        long timeLeft,
         String distanceCv,
         String location,
         String modelColor,
@@ -14,6 +15,7 @@ public record AuctionResponse(
         String engineType,
         String startingBid,
         String buyNowPrice,
-        long currentBid
+        long currentBid,
+        List<String> images
 ) {
 }

@@ -1,12 +1,13 @@
 package com.roczyno.bidding.app.api.request;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public record CreateAuctionRequest(
          String title,
          LocalDate startDate,
          LocalDate endDate,
-         int timeLeft,
+         long timeLeft,
         String distanceCv,
         String location,
          String modelColor,
@@ -14,7 +15,8 @@ public record CreateAuctionRequest(
          String engineType,
         String startingBid,
         String buyNowPrice,
-        long currentBid
+        long currentBid,
+         List<String> images
 
 ) {
 }
