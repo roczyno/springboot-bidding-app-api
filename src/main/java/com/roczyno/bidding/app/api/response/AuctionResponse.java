@@ -1,9 +1,12 @@
 package com.roczyno.bidding.app.api.response;
 
+import com.roczyno.bidding.app.api.model.AuctionStatus;
+
 import java.time.LocalDate;
 import java.util.List;
 
 public record AuctionResponse(
+        Integer id,
         String title,
         LocalDate startDate,
         LocalDate endDate,
@@ -16,6 +19,7 @@ public record AuctionResponse(
         String startingBid,
         String buyNowPrice,
         long currentBid,
-        List<String> images
+        List<String> images,
+        AuctionStatus status
 ) {
 }

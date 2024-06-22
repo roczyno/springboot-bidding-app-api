@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 public class AuctionMapper {
     public AuctionResponse toAuctionResponse(Auction auction) {
         return new AuctionResponse(
+                auction.getId(),
                 auction.getTitle(),
                 auction.getStartDate(),
                 auction.getEndDate(),
@@ -20,7 +21,8 @@ public class AuctionMapper {
                 auction.getStartingBid(),
                 auction.getBuyNowPrice(),
                 auction.getCurrentBid(),
-                auction.getImages()
+                auction.getImages(),
+                auction.getAuctionStatus()
         );
     }
 }
