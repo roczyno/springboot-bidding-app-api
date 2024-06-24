@@ -128,18 +128,18 @@ public class AuctionServiceImpl implements AuctionService {
         if (req.transmission() != null) {
             auction.setTransmission(req.transmission());
         }
-        if (req.buyNowPrice() != null) {
+
             auction.setBuyNowPrice(req.buyNowPrice());
-        }
+
         if (req.distanceCv() != null) {
             auction.setDistanceCv(req.distanceCv());
         }
         if (req.engineType() != null) {
             auction.setEngineType(req.engineType());
         }
-        if (req.startingBid() != null) {
+
             auction.setStartingBid(req.startingBid());
-        }
+
 
         Auction updatedAuction = auctionRepository.save(auction);
         return mapper.toAuctionResponse(updatedAuction);

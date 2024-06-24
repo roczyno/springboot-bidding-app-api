@@ -18,21 +18,22 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 @EnableMethodSecurity(securedEnabled = true)
 public class SecurityConfig {
-    private  final JwtFilter jwtFilter;
-    private final AuthenticationProvider authenticationProvider;
+	private  final JwtFilter jwtFilter;
+	private final AuthenticationProvider authenticationProvider;
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .cors(Customizer.withDefaults())
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(req->
-                        req.requestMatchers("/auth/**").permitAll().anyRequest().authenticated())
-                .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider)
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
-    }
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		http
+				.cors(Customizer.withDefaults())
+				.csrf(AbstractHttpConfigurer::disable)
+				.authorizeHttpRequests(req->
+						req.requestMatchers("/auth/**").permitAll().anyRequest().authenticated())
+				.sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.authenticationProvider(authenticationProvider)
+				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+		return http.build();
+	}
 
 }

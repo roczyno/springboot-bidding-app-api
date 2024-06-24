@@ -10,6 +10,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -25,5 +28,6 @@ public class Bid {
     private User user;
     @ManyToOne
     private Auction auction;
+    private LocalDateTime createdAt;
 
 }

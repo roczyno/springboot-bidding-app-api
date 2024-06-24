@@ -2,6 +2,7 @@ package com.roczyno.bidding.app.api.response;
 
 import com.roczyno.bidding.app.api.model.AuctionStatus;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -10,15 +11,16 @@ public record AuctionResponse(
         String title,
         LocalDate startDate,
         LocalDate endDate,
-        long timeLeft,
+        Long timeLeft,
         String distanceCv,
         String location,
         String modelColor,
         String transmission,
         String engineType,
-        String startingBid,
-        String buyNowPrice,
+        long  startingBid,
+        long  buyNowPrice,
         long currentBid,
+        long activeBids,
         List<String> images,
         AuctionStatus status
 ) {
