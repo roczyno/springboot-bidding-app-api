@@ -44,6 +44,7 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final ForgotPasswordTokenRepository forgotPasswordTokenRepository;
+    private SubscriptionService subscriptionService;
 
 
     @Value("${spring.application.mailing.frontend.activation-url}")
@@ -69,8 +70,9 @@ public class AuthenticationService {
                 .enabled(false)
                 .roles(List.of(userRole))
                 .build();
-        userRepository.save(user);
-        sendValidationEmail(user);
+        var savedUser=userRepository.save(user);
+        subscriptionService.createSubscription(savedUser);
+        sendValidationEmail(savedUser);
         return "user created successfully";
     }
 
