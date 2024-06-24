@@ -1,5 +1,6 @@
 package com.roczyno.bidding.app.api.config;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +13,12 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -31,9 +38,25 @@ public class SecurityConfig {
 						req.requestMatchers("/auth/**").permitAll().anyRequest().authenticated())
 				.sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authenticationProvider(authenticationProvider)
-				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+				.csrf(AbstractHttpConfigurer::disable)
+				.cors(cors->cors.configurationSource(CorsConfigurationSource()));
 
 		return http.build();
+	}
+
+
+	private CorsConfigurationSource CorsConfigurationSource() {
+		return request -> {
+			CorsConfiguration cfg = new CorsConfiguration();
+			cfg.setAllowedOrigins(Arrays.asList("http://localhost:3000","http://localhost:5173"));
+			cfg.setAllowedMethods(Collections.singletonList("*"));
+			cfg.setAllowedHeaders(Collections.singletonList("*"));
+			cfg.setAllowCredentials(true);
+			cfg.setExposedHeaders(List.of("Authorization"));
+			cfg.setMaxAge(3600L);
+			return cfg;
+		};
 	}
 
 }
