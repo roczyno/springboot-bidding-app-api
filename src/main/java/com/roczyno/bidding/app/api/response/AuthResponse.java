@@ -6,21 +6,9 @@ import java.time.LocalDate;
 
 @Builder
 public record AuthResponse(
-        String token
+        String jwt,
+        String message
 ) {
-    public static record AuctionResponse(
-            String title,
-            LocalDate startDate,
-            LocalDate endDate,
-            int timeLeft,
-            String distanceCv,
-            String location,
-            String modelColor,
-            String transmission,
-            String engineType,
-            String startingBid,
-            String buyNowPrice,
-            long currentBid
-    ) {
-    }
+
+
 }

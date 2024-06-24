@@ -3,31 +3,30 @@ package com.roczyno.bidding.app.api.model;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 @Entity
 @Getter
 @Setter
-public class Bid {
-    @Id
-    @GeneratedValue
-    private Integer id;
-    private long amount;
-    @ManyToOne
-    private User user;
-    @ManyToOne
-    private Auction auction;
-    private LocalDateTime createdAt;
-
+@Builder
+public class Subscription {
+	@Id
+	@GeneratedValue
+	private Integer id;
+	private LocalDate subscriptionStartDate;
+	private LocalDate subscriptionEndDate;
+	private boolean isSubscriptionValid;
+	private PlanType planType;
+	@OneToOne
+	private User user;
 }

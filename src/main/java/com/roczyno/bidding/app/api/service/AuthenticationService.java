@@ -44,6 +44,7 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final ForgotPasswordTokenRepository forgotPasswordTokenRepository;
+    private SubscriptionService subscriptionService;
 
 
     @Value("${spring.application.mailing.frontend.activation-url}")
@@ -51,8 +52,13 @@ public class AuthenticationService {
 
     @Transactional
     public String register(RegistrationRequest req) throws MessagingException {
-
+        User isEmailExist= userRepository.findByEmail(req.getEmail());
+        if(isEmailExist!=null){
+            throw new RuntimeException("User with this email already exists");
+        }
         var userRole = roleRepository.findByName("USER").orElseThrow();
+
+
         var user = User.builder()
                 .firstName(req.getFirstName())
                 .lastName(req.getLastName())
@@ -64,8 +70,9 @@ public class AuthenticationService {
                 .enabled(false)
                 .roles(List.of(userRole))
                 .build();
-        userRepository.save(user);
-        sendValidationEmail(user);
+        var savedUser=userRepository.save(user);
+        subscriptionService.createSubscription(savedUser);
+        sendValidationEmail(savedUser);
         return "user created successfully";
     }
 
@@ -111,6 +118,10 @@ public class AuthenticationService {
 
 
     public AuthResponse login(AuthRequest req) {
+        User isUserExist= userRepository.findByEmail(req.email());
+        if(isUserExist==null){
+            throw new RuntimeException("Wrong credentials");
+        }
         var auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 req.email(), req.password()
         ));
@@ -120,7 +131,8 @@ public class AuthenticationService {
         claims.put("username", user.getUsername());
         var jwt = jwtService.generateToken(claims, user);
         return AuthResponse.builder()
-                .token(jwt)
+                .jwt(jwt)
+                .message("User login successful")
                 .build();
     }
 

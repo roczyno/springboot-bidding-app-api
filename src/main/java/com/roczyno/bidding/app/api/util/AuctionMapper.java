@@ -21,6 +21,7 @@ public class AuctionMapper {
                 auction.getStartingBid(),
                 auction.getBuyNowPrice(),
                 auction.getCurrentBid(),
+                auction.getActiveBids(),
                 auction.getImages(),
                 auction.getAuctionStatus()
         );
