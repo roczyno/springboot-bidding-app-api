@@ -1,12 +1,15 @@
 package com.roczyno.bidding.app.api.service;
 
 import com.roczyno.bidding.app.api.exception.AuctionException;
+import com.roczyno.bidding.app.api.exception.BidException;
 import com.roczyno.bidding.app.api.model.Auction;
 import com.roczyno.bidding.app.api.model.AuctionStatus;
 import com.roczyno.bidding.app.api.model.Bid;
+import com.roczyno.bidding.app.api.model.PlanType;
 import com.roczyno.bidding.app.api.model.User;
 import com.roczyno.bidding.app.api.repository.AuctionRepository;
 import com.roczyno.bidding.app.api.repository.BidRepository;
+import com.roczyno.bidding.app.api.repository.SubscriptionRepository;
 import com.roczyno.bidding.app.api.request.CreateBidRequest;
 import com.roczyno.bidding.app.api.response.BidResponse;
 import com.roczyno.bidding.app.api.util.BidMapper;
@@ -25,6 +28,7 @@ public class BidServiceImpl implements BidService {
     private final BidRepository bidRepository;
     private final AuctionRepository auctionRepository;
     private final BidMapper mapper;
+    private SubscriptionRepository subscriptionRepository;
 
     @Transactional
     @Override
@@ -33,6 +37,14 @@ public class BidServiceImpl implements BidService {
                 .orElseThrow(() -> new AuctionException("Auction not found"));
 
         User user = (User) connectedUser.getPrincipal();
+        var subscription = subscriptionRepository.findByUserId(user.getId());
+
+        if (subscription.getPlanType() == PlanType.BASIC && bidRepository.countByUserId(user.getId()) >= 1) {
+            throw new AuctionException("Users on a BASIC plan can only place one bid");
+        }
+        else if(subscription.getPlanType()==PlanType.STANDARD && bidRepository.countByUserId(user.getId()) >= 5) {
+            throw new BidException("Users on a STANDARD plan can only place five bid");
+        }
         validateUserBid(user, auctionId);
         validateBidAmount(req.amount(), auction);
 
