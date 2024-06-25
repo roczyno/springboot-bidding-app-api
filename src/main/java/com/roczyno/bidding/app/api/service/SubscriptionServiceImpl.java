@@ -4,6 +4,7 @@ import com.roczyno.bidding.app.api.exception.SubscriptionException;
 import com.roczyno.bidding.app.api.model.PlanType;
 import com.roczyno.bidding.app.api.model.Subscription;
 import com.roczyno.bidding.app.api.model.User;
+import com.roczyno.bidding.app.api.repository.AuctionRepository;
 import com.roczyno.bidding.app.api.repository.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 	private static final int BASIC_PLAN_DAYS = 12;
 	private static final int STANDARD_PLAN_DAYS = 30;
 	private static final int PREMIUM_PLAN_DAYS = 365;
+	private final AuctionRepository auctionRepository;
 
 	@Override
 	public Subscription createSubscription(User user) {
