@@ -7,7 +7,7 @@ import org.springframework.security.core.Authentication;
 
 public interface SubscriptionService {
 	Subscription createSubscription(User user);
-	Subscription getUserSubscription(Long userId);
-	Subscription upgradeSubscription(Long userId, PlanType planType);
+	Subscription getUserSubscription(Integer userId);
+	Subscription upgradeSubscription(Integer userId, PlanType planType);
 	boolean isValidSubscription(Subscription subscription);
 }

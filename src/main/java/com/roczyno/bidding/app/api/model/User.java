@@ -7,6 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,11 +41,15 @@ public class User implements UserDetails, Principal {
     private String lastName;
     @Column(unique = true)
     private String email;
+    private int numberOfAuctionsCreated;
+    private int numberOfBids;
     private String password;
     private String profilePic;
     private String phone;
     private Boolean enabled;
     private Boolean accountLocked;
+    @OneToOne(mappedBy = "user")
+    private Subscription subscription;
     @ManyToMany(fetch = FetchType.EAGER)
     private List<Role> roles;
 
