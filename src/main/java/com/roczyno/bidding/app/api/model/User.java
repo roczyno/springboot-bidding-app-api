@@ -41,6 +41,8 @@ public class User implements UserDetails, Principal {
     @Column(unique = true)
     private String email;
     private String password;
+    private String profilePic;
+    private String phone;
     private Boolean enabled;
     private Boolean accountLocked;
     @ManyToMany(fetch = FetchType.EAGER)

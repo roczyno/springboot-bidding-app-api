@@ -1,11 +1,14 @@
 package com.roczyno.bidding.app.api.response;
 
 import com.roczyno.bidding.app.api.model.AuctionStatus;
+import lombok.Builder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+
+@Builder
 public record AuctionResponse(
         Integer id,
         String title,

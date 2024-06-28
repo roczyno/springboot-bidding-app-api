@@ -1,7 +1,9 @@
 package com.roczyno.bidding.app.api.request;
 
-import java.math.BigDecimal;
+import lombok.Builder;
 
+import java.math.BigDecimal;
+@Builder
 public record CreateBidRequest(
         long amount
 ) {
