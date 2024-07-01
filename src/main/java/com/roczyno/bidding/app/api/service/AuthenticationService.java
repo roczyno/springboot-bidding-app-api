@@ -44,7 +44,7 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final ForgotPasswordTokenRepository forgotPasswordTokenRepository;
-    private SubscriptionService subscriptionService;
+    private  final SubscriptionService subscriptionService;
 
 
     @Value("${spring.application.mailing.frontend.activation-url}")
