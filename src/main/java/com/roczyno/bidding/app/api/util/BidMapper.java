@@ -9,7 +9,7 @@ public class BidMapper {
     public BidResponse toBidResponse(Bid bid) {
         return new BidResponse(
                 bid.getId(),
-                bid.getUser().getUsername(),
+                bid.getUser().getFirstName(),
                 bid.getCreatedAt(),
                 bid.getAmount()
 

@@ -1,5 +1,6 @@
 package com.roczyno.bidding.app.api.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -7,14 +8,12 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.validation.constraints.Future;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -48,7 +47,7 @@ public class Auction {
     private LocalDateTime createdAt;
     @ManyToOne
     private User user;
-    @OneToMany(mappedBy = "auction")
+    @OneToMany(mappedBy = "auction",cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Bid> bid;
 
 

@@ -25,6 +25,9 @@ public record AuctionResponse(
         long currentBid,
         long activeBids,
         List<String> images,
-        AuctionStatus status
+        AuctionStatus status,
+		String username,
+		String userProfilePic
+
 ) {
 }

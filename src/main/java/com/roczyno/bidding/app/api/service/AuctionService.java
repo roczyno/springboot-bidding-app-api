@@ -16,4 +16,6 @@ public interface AuctionService {
   String deleteAuction(Integer auctionId, Authentication user);
   AuctionResponse updateAuction(Integer auctionId,Authentication user,CreateAuctionRequest req);
   String closeOrOpenAuction(Integer auctionId, Authentication user, AuctionStatus status);
+
+  String closeAuctionAutomatically(Integer auctionId, AuctionStatus status);
 }

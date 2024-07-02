@@ -46,6 +46,10 @@ public class AuctionController {
                                                       Authentication user){
         return ResponseEntity.ok(auctionService.closeOrOpenAuction(auctionId,user,status));
     }
+    @PutMapping("/closeAutomatic/status/{auctionId}")
+    public ResponseEntity<Object> changeAuctionStatus(@PathVariable Integer auctionId, @RequestParam AuctionStatus status){
+        return ResponseEntity.ok(auctionService.closeAuctionAutomatically(auctionId,status));
+    }
     @GetMapping
     public ResponseEntity<Object> getAuctions(Pageable pageable){
         return ResponseEntity.ok(auctionService.getAllAuctions(pageable));
