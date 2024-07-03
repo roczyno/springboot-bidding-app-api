@@ -8,6 +8,7 @@ import com.roczyno.bidding.app.api.repository.AuctionRepository;
 import com.roczyno.bidding.app.api.repository.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
@@ -23,6 +24,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 	private final AuctionRepository auctionRepository;
 
 	@Override
+	@Transactional
 	public Subscription createSubscription(User user) {
 		Subscription subscription = Subscription.builder()
 				.user(user)
