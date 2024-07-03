@@ -33,14 +33,10 @@ public class PaymentService {
 
 		try {
 			ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
-			PaymentResponse paymentResponse = objectMapper.readValue(responseEntity.getBody(), PaymentResponse.class);
-			System.out.println("Transaction initialized successfully: " + paymentResponse);
-			return paymentResponse;
+			return objectMapper.readValue(responseEntity.getBody(), PaymentResponse.class);
 		} catch (HttpClientErrorException ex) {
-			System.err.println("Error initializing transaction: " + ex.getResponseBodyAsString());
 			throw new RuntimeException("Error initializing transaction: " + ex.getResponseBodyAsString());
 		} catch (Exception ex) {
-			System.err.println("Error initializing transaction: " + ex.getMessage());
 			throw new RuntimeException("Error initializing transaction", ex);
 		}
 	}
@@ -57,10 +53,8 @@ public class PaymentService {
 			ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
 			return responseEntity.getBody();
 		} catch (HttpClientErrorException ex) {
-			System.err.println("Error verifying transaction: " + ex.getResponseBodyAsString());
 			throw new RuntimeException("Error verifying transaction: " + ex.getResponseBodyAsString());
 		} catch (Exception ex) {
-			System.err.println("Error verifying transaction: " + ex.getMessage());
 			throw new RuntimeException("Error verifying transaction", ex);
 		}
 	}
