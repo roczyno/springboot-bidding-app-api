@@ -23,7 +23,9 @@ public class AuctionMapper {
                 auction.getCurrentBid(),
                 auction.getActiveBids(),
                 auction.getImages(),
-                auction.getAuctionStatus()
+                auction.getAuctionStatus(),
+                auction.getUser().getFirstName(),
+                auction.getUser().getProfilePic()
         );
     }
 }

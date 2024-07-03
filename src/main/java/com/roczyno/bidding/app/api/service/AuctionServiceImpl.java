@@ -36,7 +36,7 @@ public class AuctionServiceImpl implements AuctionService {
 		User user = ((User) connectedUser.getPrincipal());
 		var subscription = subscriptionRepository.findByUserId(user.getId());
 
-		if (subscription.getPlanType() == PlanType.BASIC && auctionRepository.countByUserId(user.getId()) >= 1) {
+		if (subscription.getPlanType() == PlanType.BASIC && auctionRepository.countByUserId(user.getId()) >= 12) {
 			throw new AuctionException("Users on a BASIC plan can only create one auction");
 		} else if (subscription.getPlanType() == PlanType.STANDARD && auctionRepository.countByUserId(user.getId()) >= 5) {
 			throw new AuctionException("Users on a standard plan can only create five auction");
@@ -93,7 +93,7 @@ public class AuctionServiceImpl implements AuctionService {
 		User user = ((User) connectedUser.getPrincipal());
 		Auction auction = auctionRepository.findById(auctionId)
 				.orElseThrow(() -> new AuctionException("Auction not found"));
-		if (!auction.getUser().equals(user)) {
+		if (!auction.getUser().getId().equals(user.getId())) {
 			throw new AuctionException("You are not allowed to delete this auction");
 		}
 		auctionRepository.delete(auction);
@@ -168,9 +168,18 @@ public class AuctionServiceImpl implements AuctionService {
 		Auction auction = auctionRepository.findById(auctionId)
 				.orElseThrow(() -> new AuctionException("Auction not found"));
 
-		if (!auction.getUser().equals(user)) {
+		if (!auction.getUser().getId().equals(user.getId())) {
 			throw new AuctionException("You are not allowed to close this auction");
 		}
+		auction.setAuctionStatus(status);
+		auctionRepository.save(auction);
+		return "Auction closed successfully";
+	}
+
+	@Override
+	public String closeAuctionAutomatically(Integer auctionId, AuctionStatus status) {
+		Auction auction = auctionRepository.findById(auctionId)
+				.orElseThrow(() -> new AuctionException("Auction not found"));
 		auction.setAuctionStatus(status);
 		auctionRepository.save(auction);
 		return "Auction closed successfully";
