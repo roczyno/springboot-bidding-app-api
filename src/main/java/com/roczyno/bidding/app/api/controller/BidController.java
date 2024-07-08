@@ -2,7 +2,9 @@ package com.roczyno.bidding.app.api.controller;
 
 import com.roczyno.bidding.app.api.request.CreateBidRequest;
 import com.roczyno.bidding.app.api.service.BidService;
+import com.roczyno.bidding.app.api.util.ResponseHandler;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,11 +23,11 @@ public class BidController {
     @PostMapping("/auction/{auctionId}")
     public ResponseEntity<Object> addBid(@PathVariable Integer auctionId, @RequestBody CreateBidRequest bid,
                                          Authentication user) {
-        return ResponseEntity.ok(bidService.createBid(bid,user,auctionId));
+        return ResponseHandler.successResponse(bidService.createBid(bid,user,auctionId), HttpStatus.OK);
     }
 
     @GetMapping("/auction/{auctionId}")
     public ResponseEntity<Object> getBidsForAuction(@PathVariable Integer auctionId) {
-        return ResponseEntity.ok(bidService.getBidForAuction(auctionId));
+        return ResponseHandler.successResponse(bidService.getBidForAuction(auctionId),HttpStatus.OK);
     }
 }

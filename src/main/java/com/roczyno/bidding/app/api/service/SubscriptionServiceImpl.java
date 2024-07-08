@@ -6,6 +6,8 @@ import com.roczyno.bidding.app.api.model.Subscription;
 import com.roczyno.bidding.app.api.model.User;
 import com.roczyno.bidding.app.api.repository.AuctionRepository;
 import com.roczyno.bidding.app.api.repository.SubscriptionRepository;
+import com.roczyno.bidding.app.api.response.SubscriptionResponse;
+import com.roczyno.bidding.app.api.util.SubscriptionResponseMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,39 +23,40 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 	private static final int BASIC_PLAN_DAYS = 12;
 	private static final int STANDARD_PLAN_DAYS = 30;
 	private static final int PREMIUM_PLAN_DAYS = 365;
-	private final AuctionRepository auctionRepository;
+	private final SubscriptionResponseMapper mapper;
 
 	@Override
 	@Transactional
-	public Subscription createSubscription(User user) {
+	public SubscriptionResponse createSubscription(User user) {
 		Subscription subscription = Subscription.builder()
 				.user(user)
 				.subscriptionStartDate(LocalDate.now())
 				.subscriptionEndDate(LocalDate.now().plusDays(BASIC_PLAN_DAYS))
 				.planType(PlanType.BASIC)
 				.build();
-		return subscriptionRepository.save(subscription);
+		var savedSubscription= subscriptionRepository.save(subscription);
+		return mapper.toSubscriptionResponse(savedSubscription);
 	}
 
 	@Override
-	public Subscription getUserSubscription(Integer userId) {
+	public SubscriptionResponse getUserSubscription(Integer userId) {
 		Subscription subscription = subscriptionRepository.findByUserId(userId);
 		if (subscription == null) {
 			throw new SubscriptionException("Subscription not found");
 		}
 
-		if (!isValidSubscription(subscription)) {
+		if (!isValidSubscription(userId)) {
 			subscription.setPlanType(PlanType.BASIC);
 			subscription.setSubscriptionStartDate(LocalDate.now());
 			subscription.setSubscriptionEndDate(LocalDate.now().plusDays(BASIC_PLAN_DAYS));
 			subscription = subscriptionRepository.save(subscription);
 		}
-		return subscription;
+		return mapper.toSubscriptionResponse(subscription);
 	}
 
 	@Override
-	public Subscription upgradeSubscription(Integer userId, PlanType planType) {
-		Subscription subscription = getUserSubscription(userId);
+	public SubscriptionResponse upgradeSubscription(Integer userId, PlanType planType) {
+		Subscription subscription = subscriptionRepository.findByUserId(userId);
 		subscription.setPlanType(planType);
 		subscription.setSubscriptionStartDate(LocalDate.now());
 
@@ -63,11 +66,13 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 			case PREMIUM -> PREMIUM_PLAN_DAYS;
 		};
 		subscription.setSubscriptionEndDate(LocalDate.now().plusDays(duration));
-		return subscriptionRepository.save(subscription);
+		var upgradedSubscription=subscriptionRepository.save(subscription);
+		return mapper.toSubscriptionResponse(upgradedSubscription);
 	}
 
 	@Override
-	public boolean isValidSubscription(Subscription subscription) {
+	public boolean isValidSubscription(Integer userId) {
+		Subscription subscription = subscriptionRepository.findByUserId(userId);
 		LocalDate endDate = subscription.getSubscriptionEndDate();
 		return !endDate.isBefore(LocalDate.now());
 	}

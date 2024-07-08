@@ -3,8 +3,10 @@ package com.roczyno.bidding.app.api.controller;
 import com.roczyno.bidding.app.api.model.AuctionStatus;
 import com.roczyno.bidding.app.api.request.CreateAuctionRequest;
 import com.roczyno.bidding.app.api.service.AuctionService;
+import com.roczyno.bidding.app.api.util.ResponseHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,11 +27,11 @@ public class AuctionController {
 
     @PostMapping
     public ResponseEntity<Object> addAuction(@RequestBody CreateAuctionRequest req, Authentication user){
-        return ResponseEntity.ok(auctionService.createAuction(req,user));
+        return ResponseHandler.successResponse(auctionService.createAuction(req,user), HttpStatus.OK);
     }
     @GetMapping("/{auctionId}")
     public ResponseEntity<Object> getAuction(@PathVariable Integer auctionId){
-        return ResponseEntity.ok(auctionService.getAuction(auctionId));
+        return ResponseHandler.successResponse(auctionService.getAuction(auctionId),HttpStatus.OK);
     }
 
     @PutMapping("/{auctionId}")
@@ -39,19 +41,19 @@ public class AuctionController {
     }
     @DeleteMapping("/{auctionId}")
     public ResponseEntity<Object> deleteAuction(@PathVariable Integer auctionId, Authentication user){
-        return ResponseEntity.ok(auctionService.deleteAuction(auctionId,user));
+        return ResponseHandler.successResponse(auctionService.deleteAuction(auctionId,user),HttpStatus.OK);
     }
     @PutMapping("/status/{auctionId}")
     public ResponseEntity<Object> changeAuctionStatus(@PathVariable Integer auctionId, @RequestParam AuctionStatus status,
                                                       Authentication user){
-        return ResponseEntity.ok(auctionService.closeOrOpenAuction(auctionId,user,status));
+        return ResponseHandler.successResponse(auctionService.closeOrOpenAuction(auctionId,user,status),HttpStatus.OK);
     }
     @PutMapping("/closeAutomatic/status/{auctionId}")
     public ResponseEntity<Object> changeAuctionStatus(@PathVariable Integer auctionId, @RequestParam AuctionStatus status){
-        return ResponseEntity.ok(auctionService.closeAuctionAutomatically(auctionId,status));
+        return ResponseHandler.successResponse(auctionService.closeAuctionAutomatically(auctionId,status),HttpStatus.OK);
     }
     @GetMapping
     public ResponseEntity<Object> getAuctions(Pageable pageable){
-        return ResponseEntity.ok(auctionService.getAllAuctions(pageable));
+        return ResponseHandler.successResponse(auctionService.getAllAuctions(pageable),HttpStatus.OK);
     }
 }

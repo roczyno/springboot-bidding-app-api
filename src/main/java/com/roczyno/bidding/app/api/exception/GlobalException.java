@@ -3,6 +3,7 @@ package com.roczyno.bidding.app.api.exception;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import org.apache.coyote.BadRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -26,7 +27,7 @@ public class GlobalException {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalException.class);
 
-
+@ExceptionHandler(BadRequestException.class)
     public ResponseEntity<Object> handleBadRequestExceptions(RuntimeException ex, WebRequest req) {
         logException(ex);
         List<ErrorDetails> errors = Collections.singletonList(

@@ -1,13 +1,12 @@
 package com.roczyno.bidding.app.api.service;
 
 import com.roczyno.bidding.app.api.model.PlanType;
-import com.roczyno.bidding.app.api.model.Subscription;
 import com.roczyno.bidding.app.api.model.User;
-import org.springframework.security.core.Authentication;
+import com.roczyno.bidding.app.api.response.SubscriptionResponse;
 
 public interface SubscriptionService {
-	Subscription createSubscription(User user);
-	Subscription getUserSubscription(Integer userId);
-	Subscription upgradeSubscription(Integer userId, PlanType planType);
-	boolean isValidSubscription(Subscription subscription);
+	SubscriptionResponse createSubscription(User user);
+	SubscriptionResponse getUserSubscription(Integer userId);
+	SubscriptionResponse upgradeSubscription(Integer userId, PlanType planType);
+	boolean isValidSubscription(Integer userId);
 }
