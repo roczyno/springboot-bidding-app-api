@@ -9,5 +9,5 @@ import java.util.List;
 public interface ChatService {
 	Chat createChat(Authentication reqUser, Integer userId2) ;
 	Chat findChatById(Integer id) ;
-	List<Chat> findAllChatsByUserId(Integer userId);
+	List<Chat> findAllChatsByUserId(Authentication connectedUser);
 }

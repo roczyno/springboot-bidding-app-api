@@ -44,7 +44,8 @@ public class ChatServiceImpl implements ChatService{
 	}
 
 	@Override
-	public List<Chat> findAllChatsByUserId(Integer userId) {
-		return chatRepository.findByUserId(userId);
+	public List<Chat> findAllChatsByUserId(Authentication connectedUser) {
+		User user=(User) connectedUser.getPrincipal();
+		return chatRepository.findByUserId(user.getId());
 	}
 }
