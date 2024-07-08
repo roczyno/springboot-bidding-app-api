@@ -132,6 +132,8 @@ public class AuthenticationService {
         var jwt = jwtService.generateToken(claims, user);
         return AuthResponse.builder()
                 .jwt(jwt)
+                .userId(user.getId())
+                .email(user.getEmail())
                 .message("User login successful")
                 .build();
     }

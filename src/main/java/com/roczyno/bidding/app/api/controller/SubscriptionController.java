@@ -21,12 +21,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("subscription")
 public class SubscriptionController {
 	private final SubscriptionService subscriptionService;
-
-	@PostMapping
-	public ResponseEntity<Object> createSubscription(Authentication authentication) {
-		User user = (User) authentication.getPrincipal();
-		return ResponseHandler.successResponse(subscriptionService.createSubscription(user), HttpStatus.OK);
-	}
+//
+//	@PostMapping
+//	public ResponseEntity<Object> createSubscription(Authentication authentication) {
+//		User user = (User) authentication.getPrincipal();
+//		return ResponseHandler.successResponse(subscriptionService.createSubscription(user), HttpStatus.OK);
+//	}
 
 	@GetMapping("/{userId}")
 	public ResponseEntity<Object> getUserSubscription(@PathVariable Integer userId) {
@@ -37,8 +37,8 @@ public class SubscriptionController {
 	public ResponseEntity<Object> upgradeSubscription(@PathVariable Integer userId, @RequestParam PlanType planType) {
 		return ResponseHandler.successResponse( subscriptionService.upgradeSubscription(userId, planType),HttpStatus.OK);
 	}
-	@GetMapping("/{userId}/validity")
-	public boolean isValidSubscription(@PathVariable Integer userId) {
-		return subscriptionService.isValidSubscription(userId);
-	}
+//	@GetMapping("/{userId}/validity")
+//	public boolean isValidSubscription(@PathVariable Integer userId) {
+//		return subscriptionService.isValidSubscription(userId);
+//	}
 }
