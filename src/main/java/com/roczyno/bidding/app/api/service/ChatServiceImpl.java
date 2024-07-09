@@ -19,6 +19,7 @@ import java.util.List;
 public class ChatServiceImpl implements ChatService{
 	private final ChatRepository chatRepository;
 	private final UserRepository userRepository;
+
 	@Override
 	public Chat createChat(Authentication reqUser, Integer userId2)  {
 		User user1=(User) reqUser.getPrincipal();
