@@ -16,6 +16,7 @@ import com.roczyno.bidding.app.api.request.PasswordUpdateRequest;
 import com.roczyno.bidding.app.api.request.RegistrationRequest;
 import com.roczyno.bidding.app.api.request.changePasswordRequest;
 import com.roczyno.bidding.app.api.response.AuthResponse;
+import com.roczyno.bidding.app.api.util.UserMapper;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,6 +46,7 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final ForgotPasswordTokenRepository forgotPasswordTokenRepository;
     private  final SubscriptionService subscriptionService;
+    private final UserMapper userMapper;
 
 
     @Value("${spring.application.mailing.frontend.activation-url}")
@@ -132,6 +134,7 @@ public class AuthenticationService {
         var jwt = jwtService.generateToken(claims, user);
         return AuthResponse.builder()
                 .jwt(jwt)
+                .user(userMapper.toUserResponse(user))
                 .message("User login successful")
                 .build();
     }

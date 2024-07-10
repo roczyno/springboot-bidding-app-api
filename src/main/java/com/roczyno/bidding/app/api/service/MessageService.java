@@ -7,8 +7,8 @@ import org.springframework.security.core.Authentication;
 import java.util.List;
 
 public interface MessageService {
-	Message sendMessage(SendMessageRequest req) ;
-	List<Message> getChatsMessages(Integer chatId, Authentication reqUser);
-	Message findMessageById(Integer id);
+	MessageResponse sendMessage(SendMessageRequest req) ;
+	List<MessageResponse> getChatsMessages(Integer chatId, Authentication reqUser);
+	MessageResponse findMessageById(Integer id);
 	String deleteMessageById(Integer id,Authentication reqUser);
 }

@@ -1,6 +1,8 @@
 package com.roczyno.bidding.app.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -27,13 +29,12 @@ public class Chat {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
-	@ManyToMany
+	@ManyToMany(fetch = FetchType.EAGER)
 	private Set<User> users= new HashSet<>();
-	@ManyToMany
+	@ManyToMany(fetch = FetchType.EAGER)
 	private Set<User> seenBy= new HashSet<>();
-	@OneToMany
+	@OneToMany()
 	private List<Message> messages;
 	private String lastMessage;
 	private LocalDateTime createdAt;
-
 }

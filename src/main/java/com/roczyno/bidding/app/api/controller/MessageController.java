@@ -1,6 +1,7 @@
 package com.roczyno.bidding.app.api.controller;
 
 import com.roczyno.bidding.app.api.request.SendMessageRequest;
+import com.roczyno.bidding.app.api.service.MessageResponse;
 import com.roczyno.bidding.app.api.service.MessageService;
 import com.roczyno.bidding.app.api.util.ResponseHandler;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("message")
@@ -22,13 +25,13 @@ public class MessageController {
 	private final MessageService messageService;
 
 	@PostMapping
-	public ResponseEntity<Object> sendMessage(@RequestBody SendMessageRequest req){
-		return ResponseHandler.successResponse(messageService.sendMessage(req), HttpStatus.OK);
+	public ResponseEntity<MessageResponse> sendMessage(@RequestBody SendMessageRequest req){
+		return new ResponseEntity<>(messageService.sendMessage(req), HttpStatus.OK);
 	}
 
 	@GetMapping("/chat/{chatId}")
-	public ResponseEntity<Object> getChatMessages(@PathVariable Integer chatId, Authentication connectedUser){
-		return ResponseHandler.successResponse(messageService.getChatsMessages(chatId,connectedUser),HttpStatus.OK);
+	public ResponseEntity<List<MessageResponse>> getChatMessages(@PathVariable Integer chatId, Authentication connectedUser){
+		return new ResponseEntity<>(messageService.getChatsMessages(chatId,connectedUser),HttpStatus.OK);
 	}
 
 	@DeleteMapping("/delete/{id}")
