@@ -8,11 +8,13 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class MessageMapper {
+	private final ChatMapper chatMapper;
 	public MessageResponse toMessageResponse(Message req) {
 		return new MessageResponse(
 				req.getId(),
 				req.getContent(),
 				req.getCreatedAt(),
+				chatMapper.toChatResponse(req.getChat()),
 				req.getUser().getId()
 
 		);

@@ -35,7 +35,7 @@ public class SecurityConfig {
 				.cors(Customizer.withDefaults())
 				.csrf(AbstractHttpConfigurer::disable)
 				.authorizeHttpRequests(req->
-						req.requestMatchers("/auth/**","/auction/**").permitAll().anyRequest().authenticated())
+						req.requestMatchers("/auth/**","/auction/**","/ws/**").permitAll().anyRequest().authenticated())
 				.sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authenticationProvider(authenticationProvider)
 				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
