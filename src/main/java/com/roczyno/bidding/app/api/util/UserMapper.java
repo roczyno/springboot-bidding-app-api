@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 public class UserMapper {
 	public UserProfileResponse toUserResponse(User user) {
 		return new UserProfileResponse(
+				user.getId(),
 				user.getFirstName(),
 				user.getLastName(),
 				user.getEmail(),

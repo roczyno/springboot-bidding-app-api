@@ -53,7 +53,8 @@ public class AuctionController {
         return ResponseHandler.successResponse(auctionService.closeAuctionAutomatically(auctionId,status),HttpStatus.OK);
     }
     @GetMapping
-    public ResponseEntity<Object> getAuctions(Pageable pageable){
-        return ResponseHandler.successResponse(auctionService.getAllAuctions(pageable),HttpStatus.OK);
+    public ResponseEntity<Object> getAuctions(Pageable pageable, @RequestParam(required = false) String searchTerm,
+                                              @RequestParam(required = false) AuctionStatus status){
+        return ResponseHandler.successResponse(auctionService.getAllAuctions(pageable,searchTerm,status),HttpStatus.OK);
     }
 }

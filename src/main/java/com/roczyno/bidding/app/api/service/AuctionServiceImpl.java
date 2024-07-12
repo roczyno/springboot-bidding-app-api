@@ -76,10 +76,18 @@ public class AuctionServiceImpl implements AuctionService {
 	}
 
 	@Override
-	public Page<AuctionResponse> getAllAuctions(Pageable pageable) {
-		Page<Auction> auctions = auctionRepository.findAll(pageable);
+	public Page<AuctionResponse> getAllAuctions(Pageable pageable, String searchTerm, AuctionStatus status) {
+		Page<Auction> auctions;
+
+		if (searchTerm != null || status != null) {
+			auctions = auctionRepository.findByStatusAndSearchTerm(status, searchTerm, pageable);
+		} else {
+			auctions = auctionRepository.findAll(pageable);
+		}
+
 		return auctions.map(mapper::toAuctionResponse);
 	}
+
 
 	@Override
 	public AuctionResponse getAuction(Integer auctionId) {
