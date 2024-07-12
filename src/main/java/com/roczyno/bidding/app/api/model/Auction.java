@@ -3,6 +3,8 @@ package com.roczyno.bidding.app.api.model;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -40,7 +42,9 @@ public class Auction {
     private long startingBid;
     private long buyNowPrice;
     private long  currentBid;
+    @Builder.Default
     private long  activeBids=0;
+    @Enumerated(EnumType.STRING)
     private AuctionStatus auctionStatus;
     @ElementCollection(fetch = FetchType.EAGER)
     private List<String> images;

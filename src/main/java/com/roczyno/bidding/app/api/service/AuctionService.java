@@ -11,11 +11,10 @@ import org.springframework.security.core.Authentication;
 
 public interface AuctionService {
   AuctionResponse createAuction(CreateAuctionRequest req, Authentication user);
-  Page<AuctionResponse> getAllAuctions(Pageable pageable);
+  Page<AuctionResponse> getAllAuctions(Pageable pageable, String searchTerm, AuctionStatus status);
   AuctionResponse getAuction(Integer auctionId);
   String deleteAuction(Integer auctionId, Authentication user);
   AuctionResponse updateAuction(Integer auctionId,Authentication user,CreateAuctionRequest req);
   String closeOrOpenAuction(Integer auctionId, Authentication user, AuctionStatus status);
-
   String closeAuctionAutomatically(Integer auctionId, AuctionStatus status);
 }
