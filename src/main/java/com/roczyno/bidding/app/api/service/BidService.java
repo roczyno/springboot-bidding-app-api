@@ -9,4 +9,5 @@ import java.util.List;
 public interface BidService {
     String createBid(CreateBidRequest req, Authentication connectedUser, Integer auctionId);
     List<BidResponse> getBidForAuction(Integer auctionId);
+
 }
