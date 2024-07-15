@@ -49,7 +49,7 @@ public class SecurityConfig {
 	private CorsConfigurationSource CorsConfigurationSource() {
 		return request -> {
 			CorsConfiguration cfg = new CorsConfiguration();
-			cfg.setAllowedOrigins(Arrays.asList("http://localhost:4200","http://localhost:5173"));
+			cfg.setAllowedOrigins(Arrays.asList("http://localhost:4200","http://localhost:5173","https://bidding-app-frontend.onrender.com"));
 			cfg.setAllowedMethods(Collections.singletonList("*"));
 			cfg.setAllowedHeaders(Collections.singletonList("*"));
 			cfg.setAllowCredentials(true);
