@@ -69,7 +69,7 @@ public class AuthenticationService {
                 .createdDate(LocalDateTime.now())
                 .lastModifiedDate(LocalDateTime.now())
                 .accountLocked(false)
-                .enabled(false)
+                .enabled(true)
                 .roles(List.of(userRole))
                 .build();
         var savedUser=userRepository.save(user);
