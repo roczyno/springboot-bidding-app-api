@@ -39,7 +39,7 @@ public class BidServiceImpl implements BidService {
         User user = (User) connectedUser.getPrincipal();
         var subscription = subscriptionRepository.findByUserId(user.getId());
 
-        if (subscription.getPlanType() == PlanType.BASIC && bidRepository.countByUserId(user.getId()) >= 12) {
+        if (subscription.getPlanType() == PlanType.BASIC && bidRepository.countByUserId(user.getId()) >= 2) {
             throw new AuctionException("Users on a BASIC plan can only place one bid");
         }
         else if(subscription.getPlanType()==PlanType.STANDARD && bidRepository.countByUserId(user.getId()) >= 5) {
