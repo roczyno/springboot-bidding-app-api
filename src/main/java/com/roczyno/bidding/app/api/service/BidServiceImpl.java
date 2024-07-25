@@ -10,6 +10,7 @@ import com.roczyno.bidding.app.api.model.User;
 import com.roczyno.bidding.app.api.repository.AuctionRepository;
 import com.roczyno.bidding.app.api.repository.BidRepository;
 import com.roczyno.bidding.app.api.repository.SubscriptionRepository;
+import com.roczyno.bidding.app.api.repository.UserRepository;
 import com.roczyno.bidding.app.api.request.CreateBidRequest;
 import com.roczyno.bidding.app.api.response.BidResponse;
 import com.roczyno.bidding.app.api.util.BidMapper;
@@ -29,6 +30,7 @@ public class BidServiceImpl implements BidService {
     private final AuctionRepository auctionRepository;
     private final BidMapper mapper;
     private final SubscriptionRepository subscriptionRepository;
+    private final UserRepository userRepository;
 
     @Transactional
     @Override
@@ -56,7 +58,6 @@ public class BidServiceImpl implements BidService {
                 .user(user)
                 .createdAt(LocalDateTime.now())
                 .build();
-
         bidRepository.save(bid);
         updateAuctionAfterBid(auction, bid);
 
@@ -66,6 +67,8 @@ public class BidServiceImpl implements BidService {
             return "Congratulations. You have successfully won the bid";
         }
 
+        user.setNumberOfBids(user.getNumberOfBids()+1);
+        userRepository.save(user);
         return "Bid added successfully";
     }
 
