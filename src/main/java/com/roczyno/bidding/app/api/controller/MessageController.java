@@ -4,6 +4,7 @@ import com.roczyno.bidding.app.api.request.SendMessageRequest;
 import com.roczyno.bidding.app.api.service.MessageResponse;
 import com.roczyno.bidding.app.api.service.MessageService;
 import com.roczyno.bidding.app.api.util.ResponseHandler;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,7 @@ public class MessageController {
 	private final MessageService messageService;
 
 	@PostMapping
-	public ResponseEntity<MessageResponse> sendMessage(@RequestBody SendMessageRequest req){
+	public ResponseEntity<MessageResponse> sendMessage(@Valid @RequestBody SendMessageRequest req){
 		return new ResponseEntity<>(messageService.sendMessage(req), HttpStatus.OK);
 	}
 

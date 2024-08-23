@@ -53,7 +53,7 @@ public class AuthenticationService {
     private String activationUrl;
 
     @Transactional
-    public String register(RegistrationRequest req) throws MessagingException {
+    public String register(RegistrationRequest req)  {
         User isEmailExist= userRepository.findByEmail(req.getEmail());
         if(isEmailExist!=null){
             throw new RuntimeException("User with this email already exists");
@@ -74,8 +74,12 @@ public class AuthenticationService {
                 .build();
         var savedUser=userRepository.save(user);
         subscriptionService.createSubscription(savedUser);
-        sendValidationEmail(savedUser);
-        return "user created successfully";
+		try {
+			sendValidationEmail(savedUser);
+		} catch (MessagingException e) {
+			throw new RuntimeException(e);
+		}
+		return "user created successfully";
     }
 
 
@@ -140,11 +144,15 @@ public class AuthenticationService {
     }
 
     @Transactional
-    public void activateAccount(String token) throws MessagingException {
+    public void activateAccount(String token)  {
         Token savedToken = tokenRepository.findByToken(token).orElseThrow();
         if (LocalDateTime.now().isAfter(savedToken.getExpiredAt())) {
-            sendValidationEmail(savedToken.getUser());
-            throw new RuntimeException("account activation failed. a new token has been sent");
+			try {
+				sendValidationEmail(savedToken.getUser());
+			} catch (MessagingException e) {
+				throw new RuntimeException(e);
+			}
+			throw new RuntimeException("account activation failed. a new token has been sent");
         }
         var user = userRepository.findById(savedToken.getUser().getId()).orElseThrow();
         user.setEnabled(true);

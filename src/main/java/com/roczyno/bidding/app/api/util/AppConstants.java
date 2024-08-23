@@ -11,4 +11,6 @@ public class AppConstants {
 			"letters, numbers, and underscores";
 	public static final String EMAIL="Please provide a valid email address";
 	public static final String NAME_SIZE_MESSAGE = "Username must be between 3 and 20 characters long";
+	public static final String PHONE_PATTERN="^\\+?\\d{1,3}?[-. ]?\\(?\\d{1,3}?\\)?[-. ]?\\d{1,3}[-. ]?\\d{1,4}$";
+	public static final String PHONE_PATTERN_MESSAGE="Invalid phone number";
 }

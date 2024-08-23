@@ -1,6 +1,5 @@
 package com.roczyno.bidding.app.api.service;
 
-import com.roczyno.bidding.app.api.exception.AuctionException;
 import com.roczyno.bidding.app.api.model.Auction;
 import com.roczyno.bidding.app.api.model.AuctionStatus;
 import com.roczyno.bidding.app.api.model.Bid;

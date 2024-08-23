@@ -4,6 +4,7 @@ import com.roczyno.bidding.app.api.model.AuctionStatus;
 import com.roczyno.bidding.app.api.request.CreateAuctionRequest;
 import com.roczyno.bidding.app.api.service.AuctionService;
 import com.roczyno.bidding.app.api.util.ResponseHandler;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -26,7 +27,7 @@ public class AuctionController {
     private final AuctionService auctionService;
 
     @PostMapping
-    public ResponseEntity<Object> addAuction(@RequestBody CreateAuctionRequest req, Authentication user){
+    public ResponseEntity<Object> addAuction(@Valid @RequestBody CreateAuctionRequest req, Authentication user){
         return ResponseHandler.successResponse(auctionService.createAuction(req,user), HttpStatus.OK);
     }
     @GetMapping("/{auctionId}")
@@ -36,7 +37,7 @@ public class AuctionController {
 
     @PutMapping("/{auctionId}")
     public ResponseEntity<Object> updateAuction(@PathVariable Integer auctionId, Authentication user,
-                                                @RequestBody CreateAuctionRequest req){
+                                               @Valid @RequestBody CreateAuctionRequest req){
         return ResponseEntity.ok(auctionService.updateAuction(auctionId,user,req));
     }
     @DeleteMapping("/{auctionId}")

@@ -3,6 +3,7 @@ package com.roczyno.bidding.app.api.controller;
 import com.roczyno.bidding.app.api.request.CreateBidRequest;
 import com.roczyno.bidding.app.api.service.BidService;
 import com.roczyno.bidding.app.api.util.ResponseHandler;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +22,7 @@ public class BidController {
     private final BidService bidService;
 
     @PostMapping("/auction/{auctionId}")
-    public ResponseEntity<Object> addBid(@PathVariable Integer auctionId, @RequestBody CreateBidRequest bid,
+    public ResponseEntity<Object> addBid(@PathVariable Integer auctionId, @Valid @RequestBody CreateBidRequest bid,
                                          Authentication user) {
         return ResponseHandler.successResponse(bidService.createBid(bid,user,auctionId), HttpStatus.OK);
     }

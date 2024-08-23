@@ -13,7 +13,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,19 +27,19 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/register")
-    public ResponseEntity<Object> register(@Valid @RequestBody RegistrationRequest req) throws MessagingException {
+    public ResponseEntity<Object> register(@Valid @RequestBody RegistrationRequest req) {
         return ResponseEntity.ok(authenticationService.register(req));
     }
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest req) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest req) {
         return ResponseEntity.ok(authenticationService.login(req));
     }
     @GetMapping("/activate-account")
-    public void confirm(@RequestParam String token) throws MessagingException {
+    public void confirm(@RequestParam String token)  {
         authenticationService.activateAccount(token);
     }
     @PostMapping("/forgot-password")
-    public ResponseEntity<Object> initiateForgotPassword(@RequestBody PasswordResetRequest req) {
+    public ResponseEntity<Object> initiateForgotPassword(@Valid @RequestBody PasswordResetRequest req) {
         return ResponseEntity.ok(authenticationService.initiateForgotPassword(req));
     }
     @PostMapping("/verify-otp")
@@ -48,12 +47,12 @@ public class AuthenticationController {
         return ResponseEntity.ok(authenticationService.validatePasswordResetToken(token,email));
     }
     @PostMapping("/update-password")
-    public ResponseEntity<Object> updatePassword(@RequestBody PasswordUpdateRequest req, @RequestParam String email) {
+    public ResponseEntity<Object> updatePassword(@Valid @RequestBody PasswordUpdateRequest req, @RequestParam String email) {
         return ResponseEntity.ok(authenticationService.updatePassword(req,email));
     }
 
     @PostMapping ("/change-password")
-    public ResponseEntity<Object> changePassword(@RequestBody changePasswordRequest req, Authentication connectedUser){
+    public ResponseEntity<Object> changePassword(@Valid @RequestBody changePasswordRequest req, Authentication connectedUser){
         return ResponseEntity.ok(authenticationService.changePassword(req,connectedUser));
     }
 

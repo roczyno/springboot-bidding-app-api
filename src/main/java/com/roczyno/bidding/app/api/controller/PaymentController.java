@@ -4,6 +4,7 @@ import com.roczyno.bidding.app.api.request.PaymentRequest;
 import com.roczyno.bidding.app.api.request.VerifyTransactionRequest;
 import com.roczyno.bidding.app.api.response.PaymentResponse;
 import com.roczyno.bidding.app.api.service.PaymentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,7 +20,7 @@ public class PaymentController {
 	private final PaymentService paymentService;
 
 	@PostMapping("/initialize")
-	public ResponseEntity<PaymentResponse> initializeTransaction(@RequestBody PaymentRequest request) {
+	public ResponseEntity<PaymentResponse> initializeTransaction(@Valid @RequestBody PaymentRequest request) {
 		try {
 			PaymentResponse response = paymentService.initializeTransaction(request);
 			return ResponseEntity.ok(response);
