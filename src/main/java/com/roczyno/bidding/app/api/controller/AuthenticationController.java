@@ -9,6 +9,7 @@ import com.roczyno.bidding.app.api.request.changePasswordRequest;
 import com.roczyno.bidding.app.api.response.AuthResponse;
 import com.roczyno.bidding.app.api.service.AuthenticationService;
 import jakarta.mail.MessagingException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -27,7 +28,7 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/register")
-    public ResponseEntity<Object> register(@RequestBody RegistrationRequest req) throws MessagingException {
+    public ResponseEntity<Object> register(@Valid @RequestBody RegistrationRequest req) throws MessagingException {
         return ResponseEntity.ok(authenticationService.register(req));
     }
     @PostMapping("/login")
