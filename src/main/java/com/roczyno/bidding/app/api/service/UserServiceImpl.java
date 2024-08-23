@@ -1,5 +1,6 @@
 package com.roczyno.bidding.app.api.service;
 
+import com.roczyno.bidding.app.api.model.User;
 import com.roczyno.bidding.app.api.repository.UserRepository;
 import com.roczyno.bidding.app.api.request.UpdateUserRequest;
 import com.roczyno.bidding.app.api.response.UserProfileResponse;
@@ -47,5 +48,17 @@ public class UserServiceImpl implements UserService{
 		}
 		var savedUser = userRepository.save(user);
 		return mapper.toUserResponse(savedUser);
+	}
+
+	@Override
+	public void setNumberOfAuctionsCreated(User user) {
+		user.setNumberOfAuctionsCreated(user.getNumberOfAuctionsCreated()+1);
+		userRepository.save(user);
+	}
+
+	@Override
+	public void setNumberOfBidsCreated(User user) {
+		user.setNumberOfBids(user.getNumberOfBids()+1);
+		userRepository.save(user);
 	}
 }

@@ -3,17 +3,16 @@ package com.roczyno.bidding.app.api.service;
 import com.roczyno.bidding.app.api.exception.AuctionException;
 import com.roczyno.bidding.app.api.exception.BidException;
 import com.roczyno.bidding.app.api.model.Auction;
-import com.roczyno.bidding.app.api.model.AuctionStatus;
 import com.roczyno.bidding.app.api.model.Bid;
 import com.roczyno.bidding.app.api.model.PlanType;
+import com.roczyno.bidding.app.api.model.Subscription;
 import com.roczyno.bidding.app.api.model.User;
-import com.roczyno.bidding.app.api.repository.AuctionRepository;
 import com.roczyno.bidding.app.api.repository.BidRepository;
-import com.roczyno.bidding.app.api.repository.SubscriptionRepository;
-import com.roczyno.bidding.app.api.repository.UserRepository;
 import com.roczyno.bidding.app.api.request.CreateBidRequest;
 import com.roczyno.bidding.app.api.response.BidResponse;
+import com.roczyno.bidding.app.api.util.AuctionMapper;
 import com.roczyno.bidding.app.api.util.BidMapper;
+import com.roczyno.bidding.app.api.util.SubscriptionResponseMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -27,19 +26,21 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BidServiceImpl implements BidService {
     private final BidRepository bidRepository;
-    private final AuctionRepository auctionRepository;
-    private final BidMapper mapper;
-    private final SubscriptionRepository subscriptionRepository;
-    private final UserRepository userRepository;
+    private final AuctionService auctionService;
+    private final AuctionMapper auctionMapper;
+    private final BidMapper bidMapper;
+    private final SubscriptionService subscriptionService;
+    private final SubscriptionResponseMapper subscriptionResponseMapper;
+    private final UserService userService;
+
 
     @Transactional
     @Override
     public String createBid(CreateBidRequest req, Authentication connectedUser, Integer auctionId) {
-        Auction auction = auctionRepository.findById(auctionId)
-                .orElseThrow(() -> new AuctionException("Auction not found"));
-
+        Auction auction =auctionMapper.toAuction(auctionService.getAuction(auctionId));
         User user = (User) connectedUser.getPrincipal();
-        var subscription = subscriptionRepository.findByUserId(user.getId());
+        Subscription subscription = subscriptionResponseMapper
+                .toSubscription(subscriptionService.getUserSubscription(user.getId()));
 
         if (subscription.getPlanType() == PlanType.BASIC && bidRepository.countByUserId(user.getId()) >= 2) {
             throw new AuctionException("Users on a BASIC plan can only place one bid");
@@ -62,13 +63,11 @@ public class BidServiceImpl implements BidService {
         updateAuctionAfterBid(auction, bid);
 
         if (req.amount() >= auction.getBuyNowPrice()) {
-            auction.setAuctionStatus(AuctionStatus.CLOSED);
-            auctionRepository.save(auction);
+            auctionService.closeAuctionForBuyNow(auction);
             return "Congratulations. You have successfully won the bid";
         }
 
-        user.setNumberOfBids(user.getNumberOfBids()+1);
-        userRepository.save(user);
+        userService.setNumberOfBidsCreated(user);
         return "Bid added successfully";
     }
 
@@ -86,9 +85,8 @@ public class BidServiceImpl implements BidService {
     }
 
     private void updateAuctionAfterBid(Auction auction, Bid bid) {
-        auction.setCurrentBid(bid.getAmount());
-        auction.setActiveBids(auction.getActiveBids() + 1);
-        auctionRepository.save(auction);
+        auctionService.setCurrentBidForAuction(bid.getAmount(),auction);
+        auctionService.setActiveBidsForAuction(auction);
     }
 
     @Override
@@ -98,7 +96,7 @@ public class BidServiceImpl implements BidService {
             throw new AuctionException("No bids found for the specified auction");
         }
         return bids.stream()
-                .map(mapper::toBidResponse)
+                .map(bidMapper::toBidResponse)
                 .collect(Collectors.toList());
     }
 

@@ -29,4 +29,24 @@ public class AuctionMapper {
                 auction.getUser().getProfilePic()
         );
     }
+
+	public Auction toAuction(AuctionResponse res) {
+		return Auction.builder()
+				.id(res.id())
+				.title(res.title())
+				.startDate(res.startDate())
+				.endDate(res.endDate())
+				.timeLeft(res.timeLeft())
+				.distanceCv(res.distanceCv())
+				.location(res.location())
+				.modelColor(res.modelColor())
+				.transmission(res.transmission())
+				.engineType(res.engineType())
+				.startingBid(res.startingBid())
+				.buyNowPrice(res.buyNowPrice())
+				.currentBid(res.currentBid())
+				.activeBids(res.activeBids())
+				.images(res.images())
+				.build();
+	}
 }

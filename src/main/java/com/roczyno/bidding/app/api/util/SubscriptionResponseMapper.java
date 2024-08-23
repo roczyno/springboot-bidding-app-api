@@ -14,4 +14,13 @@ public class SubscriptionResponseMapper {
 				req.getPlanType()
 		);
 	}
+
+	public Subscription toSubscription(SubscriptionResponse subscriptionResponse) {
+		return Subscription.builder()
+				.subscriptionStartDate(subscriptionResponse.subscriptionStartDate())
+				.subscriptionEndDate(subscriptionResponse.subscriptionEndDate())
+				.isSubscriptionValid(subscriptionResponse.isSubscriptionValid())
+				.planType(subscriptionResponse.planType())
+				.build();
+	}
 }

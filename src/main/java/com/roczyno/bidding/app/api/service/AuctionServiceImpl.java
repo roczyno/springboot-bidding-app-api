@@ -4,14 +4,14 @@ import com.roczyno.bidding.app.api.exception.AuctionException;
 import com.roczyno.bidding.app.api.model.Auction;
 import com.roczyno.bidding.app.api.model.AuctionStatus;
 import com.roczyno.bidding.app.api.model.PlanType;
+import com.roczyno.bidding.app.api.model.Subscription;
 import com.roczyno.bidding.app.api.model.User;
 import com.roczyno.bidding.app.api.repository.AuctionRepository;
-import com.roczyno.bidding.app.api.repository.SubscriptionRepository;
-import com.roczyno.bidding.app.api.repository.UserRepository;
 import com.roczyno.bidding.app.api.request.CreateAuctionRequest;
 
 import com.roczyno.bidding.app.api.response.AuctionResponse;
 import com.roczyno.bidding.app.api.util.AuctionMapper;
+import com.roczyno.bidding.app.api.util.SubscriptionResponseMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,13 +28,14 @@ import java.time.temporal.ChronoUnit;
 public class AuctionServiceImpl implements AuctionService {
 	private final AuctionRepository auctionRepository;
 	private final AuctionMapper mapper;
-	private final UserRepository userRepository;
-	private final SubscriptionRepository subscriptionRepository;
+	private final SubscriptionService subscriptionService;
+	private final SubscriptionResponseMapper subscriptionResponseMapper;
+	private final UserService userService;
 
 	@Override
 	public AuctionResponse createAuction(CreateAuctionRequest req, Authentication connectedUser) {
 		User user = ((User) connectedUser.getPrincipal());
-		var subscription = subscriptionRepository.findByUserId(user.getId());
+		Subscription subscription = subscriptionResponseMapper.toSubscription(subscriptionService.getUserSubscription(user.getId()));
 
 		if (subscription.getPlanType() == PlanType.BASIC && auctionRepository.countByUserId(user.getId()) >= 2) {
 			throw new AuctionException("Users on a BASIC plan can only create one auction");
@@ -69,8 +70,7 @@ public class AuctionServiceImpl implements AuctionService {
 				.user(user)
 				.build();
 
-		user.setNumberOfAuctionsCreated(user.getNumberOfAuctionsCreated() + 1);
-		userRepository.save(user);
+		userService.setNumberOfAuctionsCreated(user);
 		Auction savedAuction = auctionRepository.save(auction);
 		return mapper.toAuctionResponse(savedAuction);
 	}
@@ -191,5 +191,24 @@ public class AuctionServiceImpl implements AuctionService {
 		auction.setAuctionStatus(status);
 		auctionRepository.save(auction);
 		return "Auction closed successfully";
+	}
+
+	@Override
+	public void setCurrentBidForAuction(long currentBid,Auction auction) {
+		auction.setCurrentBid(currentBid);
+		auctionRepository.save(auction);
+
+	}
+
+	@Override
+	public void setActiveBidsForAuction(Auction auction) {
+		auction.setActiveBids(auction.getActiveBids()+1);
+		auctionRepository.save(auction);
+	}
+
+	@Override
+	public void closeAuctionForBuyNow(Auction auction) {
+		auction.setAuctionStatus(AuctionStatus.CLOSED);
+		auctionRepository.save(auction);
 	}
 }

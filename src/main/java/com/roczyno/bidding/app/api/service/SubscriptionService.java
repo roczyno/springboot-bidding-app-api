@@ -9,4 +9,5 @@ public interface SubscriptionService {
 	SubscriptionResponse getUserSubscription(Integer userId);
 	SubscriptionResponse upgradeSubscription(Integer userId, PlanType planType);
 	boolean isValidSubscription(Integer userId);
+
 }

@@ -1,6 +1,7 @@
 package com.roczyno.bidding.app.api.service;
 
 
+import com.roczyno.bidding.app.api.model.Auction;
 import com.roczyno.bidding.app.api.model.AuctionStatus;
 import com.roczyno.bidding.app.api.request.CreateAuctionRequest;
 
@@ -17,4 +18,7 @@ public interface AuctionService {
   AuctionResponse updateAuction(Integer auctionId,Authentication user,CreateAuctionRequest req);
   String closeOrOpenAuction(Integer auctionId, Authentication user, AuctionStatus status);
   String closeAuctionAutomatically(Integer auctionId, AuctionStatus status);
+  void setCurrentBidForAuction(long currentBid, Auction auction);
+  void setActiveBidsForAuction(Auction auction);
+  void closeAuctionForBuyNow(Auction auction);
 }
