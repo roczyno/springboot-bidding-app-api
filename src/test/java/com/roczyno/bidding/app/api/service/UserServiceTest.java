@@ -5,6 +5,7 @@ import com.roczyno.bidding.app.api.repository.UserRepository;
 import com.roczyno.bidding.app.api.request.UpdateUserRequest;
 import com.roczyno.bidding.app.api.response.UserProfileResponse;
 import com.roczyno.bidding.app.api.util.UserMapper;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -28,23 +29,28 @@ class UserServiceTest {
 	private UserRepository userRepository;
 	@Mock
 	private UserMapper mapper;
+	private AutoCloseable closeable;
 
 	@BeforeEach
 	void setUp() {
-		MockitoAnnotations.openMocks(this);
+		closeable = MockitoAnnotations.openMocks(this);
+	}
+	@AfterEach
+	void tearDown() throws Exception {
+		closeable.close();
 	}
 
 	@Test
 	public void test_getUser_success(){
 		Integer userId= 1;
-		UserProfileResponse expectedResponse = new UserProfileResponse(userId,
-				"adiaba","jacob@gmail.com","gsgsd","0548562559");
+		UserProfileResponse expectedResponse = new UserProfileResponse(1,
+				"adiaba","jacob","adiaba@gmail.com","sjdhjsl","3258270");
 
 		User user= new User();
 		user.setId(1);
 		user.setFirstName("jacob");
 		user.setLastName("adiaba");
-		user.setEmail("jacob@gmail.com");
+		user.setEmail("adiaba@gmail.com");
 
 		when(userRepository.findById(userId)).thenReturn(Optional.of((user)));
 		when(mapper.toUserResponse(user)).thenReturn(expectedResponse);
@@ -77,8 +83,8 @@ class UserServiceTest {
 		updatedUser.setProfilePic("profilePic");
 		updatedUser.setPhone("4808035");
 
-		UserProfileResponse expectedResponse= new UserProfileResponse("firstname","lastName",
-				"email", "profilePic","sjkgjs");
+		UserProfileResponse expectedResponse= new UserProfileResponse(1,"lastName",
+				"email", "profilePic","sjkgjs","2424232");
 		when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 		when(userRepository.save(any(User.class))).thenReturn(updatedUser);
 		when(mapper.toUserResponse(updatedUser)).thenReturn(expectedResponse);
@@ -111,6 +117,7 @@ class UserServiceTest {
 		List<UserProfileResponse> expectedResponse= users
 				.stream()
 				.map(user -> new UserProfileResponse(
+						user.getId(),
 						user.getFirstName(),
 						user.getLastName(),
 						user.getEmail(),
