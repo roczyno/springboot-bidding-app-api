@@ -2,10 +2,12 @@ package com.roczyno.bidding.app.api.controller;
 
 import com.roczyno.bidding.app.api.model.AuctionStatus;
 import com.roczyno.bidding.app.api.request.CreateAuctionRequest;
+import com.roczyno.bidding.app.api.response.AuctionResponse;
 import com.roczyno.bidding.app.api.service.AuctionService;
 import com.roczyno.bidding.app.api.util.ResponseHandler;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -54,8 +56,8 @@ public class AuctionController {
         return ResponseHandler.successResponse(auctionService.closeAuctionAutomatically(auctionId,status),HttpStatus.OK);
     }
     @GetMapping
-    public ResponseEntity<Object> getAuctions(Pageable pageable, @RequestParam(required = false) String searchTerm,
-                                              @RequestParam(required = false) AuctionStatus status){
-        return ResponseHandler.successResponse(auctionService.getAllAuctions(pageable,searchTerm,status),HttpStatus.OK);
+    public ResponseEntity<Page<AuctionResponse>> getAuctions(Pageable pageable, @RequestParam(required = false) String searchTerm,
+                                                             @RequestParam(required = false) AuctionStatus status){
+        return ResponseEntity.ok(auctionService.getAllAuctions(pageable,searchTerm,status));
     }
 }

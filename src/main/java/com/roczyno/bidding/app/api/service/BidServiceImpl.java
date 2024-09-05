@@ -51,8 +51,6 @@ public class BidServiceImpl implements BidService {
         validateUserBid(user, auctionId);
         validateBidAmount(req.amount(), auction);
 
-
-
         Bid bid = Bid.builder()
                 .amount(req.amount())
                 .auction(auction)
