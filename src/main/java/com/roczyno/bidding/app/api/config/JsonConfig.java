@@ -22,7 +22,7 @@ public class JsonConfig {
 				.registerModule(new Jdk8Module())
 				.registerModule(new JavaTimeModule());
 
-		mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);// will remove value properties
+		mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		jsonConverter.setObjectMapper(mapper);
 		return jsonConverter;

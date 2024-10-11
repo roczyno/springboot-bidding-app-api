@@ -32,6 +32,7 @@ public class AuctionServiceImpl implements AuctionService {
 	private final SubscriptionResponseMapper subscriptionResponseMapper;
 	private final UserService userService;
 
+
 	@Override
 	public AuctionResponse createAuction(CreateAuctionRequest req, Authentication connectedUser) {
 		User user = ((User) connectedUser.getPrincipal());

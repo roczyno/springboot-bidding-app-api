@@ -4,7 +4,6 @@ import com.roczyno.bidding.app.api.exception.SubscriptionException;
 import com.roczyno.bidding.app.api.model.PlanType;
 import com.roczyno.bidding.app.api.model.Subscription;
 import com.roczyno.bidding.app.api.model.User;
-import com.roczyno.bidding.app.api.repository.AuctionRepository;
 import com.roczyno.bidding.app.api.repository.SubscriptionRepository;
 import com.roczyno.bidding.app.api.response.SubscriptionResponse;
 import com.roczyno.bidding.app.api.util.SubscriptionResponseMapper;
@@ -27,7 +26,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
 	@Override
 	@Transactional
-	public SubscriptionResponse createSubscription(User user) {
+	public void createSubscription(User user) {
 		Subscription subscription = Subscription.builder()
 				.user(user)
 				.subscriptionStartDate(LocalDate.now())
@@ -35,7 +34,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 				.planType(PlanType.BASIC)
 				.build();
 		var savedSubscription= subscriptionRepository.save(subscription);
-		return mapper.toSubscriptionResponse(savedSubscription);
+		mapper.toSubscriptionResponse(savedSubscription);
 	}
 
 	@Override
