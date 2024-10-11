@@ -32,7 +32,9 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
-
+/**
+ * Service class for managing user authentication, registration, password management, and account activation.
+ */
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -52,6 +54,15 @@ public class AuthenticationService {
     @Value("${spring.application.mailing.frontend.activation-url}")
     private String activationUrl;
 
+    /**
+     * Registers a new user with the provided registration request.
+     * The user is created with an encoded password, a default role, and a subscription.
+     * After user creation, an account activation email is sent.
+     *
+     * @param req the registration request containing user details.
+     * @return a success message indicating that the user was created.
+     * @throws RuntimeException if a user with the provided email already exists or if email sending fails.
+     */
     @Transactional
     public String register(RegistrationRequest req)  {
         User isEmailExist= userRepository.findByEmail(req.getEmail());
@@ -82,7 +93,13 @@ public class AuthenticationService {
 		return "user created successfully";
     }
 
-
+    /**
+     * Sends an account activation email to the user after registration.
+     * Generates an activation token and sends the email using the email service.
+     *
+     * @param user the newly registered user.
+     * @throws MessagingException if an error occurs while sending the email.
+     */
     private void sendValidationEmail(User user) throws MessagingException {
         var newToken = generateAndSaveActivationToken(user);
         emailService.sendEmail(
@@ -97,6 +114,12 @@ public class AuthenticationService {
 
     }
 
+    /**
+     * Generates and saves an activation token for the specified user.
+     *
+     * @param user the user for whom the token is being generated.
+     * @return the generated activation token.
+     */
     private String generateAndSaveActivationToken(User user) {
         String generatedToken = generateActivationCode();
         var token = Token.builder()
@@ -123,6 +146,13 @@ public class AuthenticationService {
     }
 
 
+    /**
+     * Authenticates a user using the provided credentials and returns a JWT.
+     *
+     * @param req the authentication request containing the user's email and password.
+     * @return an AuthResponse containing the JWT and user details.
+     * @throws RuntimeException if the user does not exist or the credentials are incorrect.
+     */
     public AuthResponse login(AuthRequest req) {
         User isUserExist= userRepository.findByEmail(req.email());
         if(isUserExist==null){
@@ -143,6 +173,15 @@ public class AuthenticationService {
                 .build();
     }
 
+
+
+    /**
+     * Activates a user account using the provided token.
+     * If the token is expired, a new activation email is sent.
+     *
+     * @param token the activation token.
+     * @throws RuntimeException if the token is expired or invalid.
+     */
     @Transactional
     public void activateAccount(String token)  {
         Token savedToken = tokenRepository.findByToken(token).orElseThrow();
@@ -162,6 +201,13 @@ public class AuthenticationService {
     }
 
 
+    /**
+     * Initiates a password reset process by generating a reset token and sending it via email.
+     *
+     * @param req the password reset request containing the user's email.
+     * @return a success message indicating that the reset process was initiated.
+     * @throws RuntimeException if the user's email is not found or if the user is not verified.
+     */
     public String initiateForgotPassword(PasswordResetRequest req) {
         var user = userRepository.findByEmail(req.email());
         if (user == null) {
@@ -209,6 +255,14 @@ public class AuthenticationService {
         return rand.nextInt(1000, 9999);
     }
 
+    /**
+     * Validates the password reset token for the specified email.
+     *
+     * @param token the reset token.
+     * @param email the user's email.
+     * @return a success message if the token is valid.
+     * @throws RuntimeException if the token is invalid or expired.
+     */
     public String validatePasswordResetToken(int token,String email) {
         var user= userRepository.findByEmail(email);
         ForgotPasswordToken fp = forgotPasswordTokenRepository.findByTokenAndUser(token,user);
@@ -225,6 +279,14 @@ public class AuthenticationService {
     }
 
 
+    /**
+     * Updates the user's password after a successful password reset token validation.
+     *
+     * @param req the password update request containing the new password and its confirmation.
+     * @param email the user's email.
+     * @return a success message indicating that the password was updated.
+     * @throws RuntimeException if the passwords do not match, the email is not found, or the user is not verified.
+     */
     public String updatePassword(PasswordUpdateRequest req, String email) {
         String password = req.password();
         String repeatPassword = req.repeatPassword();
@@ -243,6 +305,15 @@ public class AuthenticationService {
         return "Password updated successfully";
     }
 
+    /**
+     * Changes the authenticated user's password.
+     * Validates the old password and ensures that the new password and confirmation match.
+     *
+     * @param req the request containing the old password, new password, and confirmation.
+     * @param connectedUser the authenticated user whose password is being changed.
+     * @return a success message indicating that the password was changed.
+     * @throws RuntimeException if the old password is incorrect or the new passwords do not match.
+     */
     public String changePassword(changePasswordRequest req, Authentication connectedUser) {
         User user = ((User) connectedUser.getPrincipal());
         String oldPassword = req.oldPassword();

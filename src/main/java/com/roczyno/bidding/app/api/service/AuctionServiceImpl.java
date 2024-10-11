@@ -23,6 +23,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
+/**
+ * Service implementation for managing auctions.
+ */
 @Service
 @RequiredArgsConstructor
 public class AuctionServiceImpl implements AuctionService {
@@ -32,6 +35,15 @@ public class AuctionServiceImpl implements AuctionService {
 	private final SubscriptionResponseMapper subscriptionResponseMapper;
 	private final UserService userService;
 
+	/**
+	 * Creates a new auction for the authenticated user.
+	 *
+	 * @param req the request containing auction details.
+	 * @param connectedUser the authenticated user.
+	 * @return the response containing auction details.
+	 * @throws AuctionException if the user exceeds auction limits based on their subscription plan.
+	 * @throws IllegalArgumentException if the end date is before the start date.
+	 */
 
 	@Override
 	public AuctionResponse createAuction(CreateAuctionRequest req, Authentication connectedUser) {
@@ -76,6 +88,14 @@ public class AuctionServiceImpl implements AuctionService {
 		return mapper.toAuctionResponse(savedAuction);
 	}
 
+	/**
+	 * Retrieves a paginated list of all auctions based on search term and status.
+	 *
+	 * @param pageable pagination information.
+	 * @param searchTerm the term to search auctions by title or description.
+	 * @param status the status to filter auctions.
+	 * @return a paginated list of auction responses.
+	 */
 	@Override
 	public Page<AuctionResponse> getAllAuctions(Pageable pageable, String searchTerm, AuctionStatus status) {
 		Page<Auction> auctions;
@@ -90,6 +110,13 @@ public class AuctionServiceImpl implements AuctionService {
 	}
 
 
+	/**
+	 * Retrieves details of a specific auction by its ID.
+	 *
+	 * @param auctionId the ID of the auction.
+	 * @return the auction details.
+	 * @throws AuctionException if the auction is not found.
+	 */
 	@Override
 	public AuctionResponse getAuction(Integer auctionId) {
 		var auction = auctionRepository.findById(auctionId)
@@ -97,6 +124,14 @@ public class AuctionServiceImpl implements AuctionService {
 		return mapper.toAuctionResponse(auction);
 	}
 
+	/**
+	 * Deletes an auction if the authenticated user is the owner of the auction.
+	 *
+	 * @param auctionId the ID of the auction to delete.
+	 * @param connectedUser the authenticated user attempting to delete the auction.
+	 * @return a success message if deletion is successful.
+	 * @throws AuctionException if the user is not authorized or the auction is not found.
+	 */
 	@Override
 	public String deleteAuction(Integer auctionId, Authentication connectedUser) {
 		User user = ((User) connectedUser.getPrincipal());
@@ -110,6 +145,15 @@ public class AuctionServiceImpl implements AuctionService {
 	}
 
 
+	/**
+	 * Updates the details of an existing auction.
+	 *
+	 * @param auctionId the ID of the auction to update.
+	 * @param connectedUser the authenticated user attempting to update the auction.
+	 * @param req the request containing updated auction details.
+	 * @return the updated auction response.
+	 * @throws AuctionException if the user is not authorized or the auction is not found.
+	 */
 	@Override
 	public AuctionResponse updateAuction(Integer auctionId, Authentication connectedUser, CreateAuctionRequest req) {
 		User user = (User) connectedUser.getPrincipal();
@@ -170,6 +214,15 @@ public class AuctionServiceImpl implements AuctionService {
 	}
 
 
+	/**
+	 * Closes or opens an auction depending on the given status.
+	 *
+	 * @param auctionId the ID of the auction.
+	 * @param connectedUser the authenticated user.
+	 * @param status the status to set (OPEN or CLOSED).
+	 * @return a message confirming the operation.
+	 * @throws AuctionException if the user is not authorized or the auction is not found.
+	 */
 	@Override
 	public String closeOrOpenAuction(Integer auctionId, Authentication connectedUser, AuctionStatus status) {
 		User user = (User) connectedUser.getPrincipal();
@@ -185,6 +238,15 @@ public class AuctionServiceImpl implements AuctionService {
 		return "Auction closed successfully";
 	}
 
+	/**
+	 * Closes the auction automatically, typically based on a scheduled event.
+	 *
+	 * @param auctionId the ID of the auction.
+	 * @param status the status to set (CLOSED).
+	 * @return a message confirming the auction closure.
+	 * @throws AuctionException if the auction is not found.
+	 */
+
 	@Override
 	public String closeAuctionAutomatically(Integer auctionId, AuctionStatus status) {
 		Auction auction = auctionRepository.findById(auctionId)
@@ -194,6 +256,12 @@ public class AuctionServiceImpl implements AuctionService {
 		return "Auction closed successfully";
 	}
 
+	/**
+	 * Sets the current bid for an auction.
+	 *
+	 * @param currentBid the current bid amount.
+	 * @param auction the auction to update.
+	 */
 	@Override
 	public void setCurrentBidForAuction(long currentBid,Auction auction) {
 		auction.setCurrentBid(currentBid);
@@ -201,12 +269,22 @@ public class AuctionServiceImpl implements AuctionService {
 
 	}
 
+	/**
+	 * Increments the number of active bids for the auction.
+	 *
+	 * @param auction the auction to update.
+	 */
 	@Override
 	public void setActiveBidsForAuction(Auction auction) {
 		auction.setActiveBids(auction.getActiveBids()+1);
 		auctionRepository.save(auction);
 	}
 
+	/**
+	 * Closes the auction for a 'buy now' event.
+	 *
+	 * @param auction the auction to close.
+	 */
 	@Override
 	public void closeAuctionForBuyNow(Auction auction) {
 		auction.setAuctionStatus(AuctionStatus.CLOSED);
