@@ -6,10 +6,15 @@ pipeline {
     }
 
     stages {
+        stage("Init") {
+        steps {
+            echo "Initializing..."
+             }
+        }
         stage('Package') {
             steps {
                 echo 'Packaging application...'
-                sh 'mvn clean package'
+
             }
         }
     }
