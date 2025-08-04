@@ -24,7 +24,7 @@ pipeline {
                     echo "Incrementing Application Version"
 
                     sh '''mvn build-helper:parse-version versions:set \
-                        -DnewVersion=${parsed.majorVersion}.${parsed.minorVersion}.${parsed.incrementalVersion} \
+                        -DnewVersion=\\${parsed.majorVersion}.\\${parsed.minorVersion}.\\${parsed.incrementalVersion} \
                         versions:commit'''
 
                     def pom = readFile("pom.xml")
@@ -32,10 +32,12 @@ pipeline {
                     def version = matcher ? matcher[0][1] : "0.0.0"
 
                     echo "Resolved version: ${version}"
+
                     env.IMAGE_NAME = "${version}-${BUILD_NUMBER}"
                 }
             }
         }
+
 
         stage('Package') {
             steps {
