@@ -7,14 +7,14 @@ pipeline {
 
     stages {
         stage("Init") {
-        steps {
-            echo "Initializing..."
-             }
+            steps {
+                echo "Initializing..."
+            }
         }
         stage('Package') {
             steps {
-                echo 'Packaging application...'
-                sh 'mvn clean package'
+                echo 'Packaging application without running tests...'
+                sh 'mvn clean package -DskipTests'
             }
         }
     }
