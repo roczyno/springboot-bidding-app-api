@@ -14,7 +14,7 @@ pipeline {
         stage('Package') {
             steps {
                 echo 'Packaging application...'
-
+                sh 'mvn clean package'
             }
         }
     }
