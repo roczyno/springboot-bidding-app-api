@@ -45,5 +45,27 @@ pipeline {
                 sh 'mvn clean package -DskipTests'
             }
         }
+
+        stage("Build Image"){
+            steps{
+              script {
+                 echo "Building docker image..."
+                 withCredentials([
+                      usernamePassword(
+                          credentialsId: "dockerhub-credentials",
+                          passwordVariable:"PASS",
+                          usernameVariable: "USER"
+                      )
+                 ]){
+
+                    sh "docker build -t roczyno/java-bidding-api:${IMAGE_NAME} ."
+                    sh 'echo $PASS | docker login -u $USER --password-stdin'
+                    sh "docker push roczyno/java-bidding-api:${IMAGE_NAME}"
+                 }
+              }
+
+
+            }
+        }
     }
 }
