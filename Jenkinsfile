@@ -61,10 +61,7 @@ pipeline {
                                 sh 'git remote set-url origin https://$USER:$PASS@github.com/roczyno/springboot-bidding-app-api.git'
                                 sh 'git add pom.xml'
                                 sh 'git commit -m "ci: version bump" || echo "No changes to commit"'
-
-                                // Get current branch dynamically
-                                def branch = sh(script: "git rev-parse --abbrev-ref HEAD", returnStdout: true).trim()
-                                sh "git push origin ${branch}"
+                                sh 'git push origin HEAD:refs/heads/main'
                             }
                         }
                     }
