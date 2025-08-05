@@ -98,7 +98,7 @@ pipeline {
 
                     sshagent(credentials: ["ec2-server-key"]) {
                         sh """
-                            ssh -o StrictHostKeyChecking=no ec2-user@44.204.83.113 \\
+                            ssh -o StrictHostKeyChecking=no ec2-user@54.175.202.161 \\
                             '${dockerCmd}'
                         """
                     }
