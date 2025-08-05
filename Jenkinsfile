@@ -45,6 +45,30 @@ pipeline {
                 sh 'mvn clean package -DskipTests'
             }
         }
+         stage("Commit Version Update") {
+                    steps {
+                        script {
+                            withCredentials([
+                                usernamePassword(
+                                    credentialsId: 'github-credentials',
+                                    usernameVariable: 'USER',
+                                    passwordVariable: 'PASS'
+                                )
+                            ]) {
+                                echo "Committing version change to GitHub"
+                                sh 'git config user.email "jenkins@gmail.com"'
+                                sh 'git config user.name "jenkins"'
+                                sh 'git remote set-url origin https://$USER:$PASS@github.com/roczyno/springboot-bidding-app-api.git'
+                                sh 'git add pom.xml'
+                                sh 'git commit -m "ci: version bump" || echo "No changes to commit"'
+
+                                // Get current branch dynamically
+                                def branch = sh(script: "git rev-parse --abbrev-ref HEAD", returnStdout: true).trim()
+                                sh "git push origin ${branch}"
+                            }
+                        }
+                    }
+                }
 
         stage("Build Image"){
             steps{
