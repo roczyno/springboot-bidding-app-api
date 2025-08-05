@@ -88,5 +88,23 @@ pipeline {
 
             }
         }
+
+        stage("Deploy") {
+            steps {
+                script {
+                    echo "Deploying to EC2..."
+
+                    def dockerCmd = "docker run -p 8081:8081 -d roczyno/java-bidding-api:${IMAGE_NAME}"
+
+                    sshagent(credentials: ["ec2-server-key"]) {
+                        sh """
+                            ssh -o StrictHostKeyChecking=no ec2-user@44.204.83.113 \\
+                            '${dockerCmd}'
+                        """
+                    }
+                }
+            }
+        }
+
     }
 }
