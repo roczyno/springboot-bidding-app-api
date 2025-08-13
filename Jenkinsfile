@@ -17,6 +17,20 @@ pipeline {
                 echo "Running tests..."
             }
         }
+        stage("deploy to eks"){
+            environment {
+                AWS_ACCESS_KEY_ID = credentials('jenkins_aws_access_key_id')
+                AWS_SECRET_ACCESS_KEY = credentials('jenkins_aws_secret_access_key')
+                AWS_DEFAULT_REGION = 'us-east-1'
+            }
+            steps {
+                script {
+                    echo 'Deploying to AWS...'
+                    sh "kubectl create deployment nginx-deployment --image=nginx"
+                }
+            }
+
+        }
 
         stage("Increment version") {
             steps {
