@@ -6,31 +6,41 @@ pipeline {
     }
 
     stages {
-        stage("Init") {
-            steps {
-                echo "Initializing..."
-            }
-        }
+        stage("Increment version") {
+                    steps {
+                        script {
+                            echo "Incrementing Application Version"
 
-        stage("Test") {
-            steps {
-                echo "Running tests..."
-            }
-        }
-        stage("deploy to eks"){
-            environment {
-                AWS_ACCESS_KEY_ID = credentials('jenkins_aws_access_key_id')
-                AWS_SECRET_ACCESS_KEY = credentials('jenkins_aws_secret_access_key')
-                AWS_DEFAULT_REGION = 'us-east-1'
-            }
-            steps {
-                script {
-                    echo 'Deploying to AWS...'
-                    sh "kubectl create deployment nginx-deployment --image=nginx"
+                            sh '''mvn build-helper:parse-version versions:set \
+                                -DnewVersion=\\${parsed.majorVersion}.\\${parsed.minorVersion}.\\${parsed.incrementalVersion} \
+                                versions:commit'''
+
+                            def pom = readFile("pom.xml")
+                            def matcher = pom =~ '<version>(.+)</version>'
+                            def version = matcher ? matcher[0][1] : "0.0.0"
+
+                            echo "Resolved version: ${version}"
+
+                            env.IMAGE_NAME = "${version}-${BUILD_NUMBER}"
+                        }
+                    }
                 }
-            }
 
         }
+//         stage("deploy to eks"){
+//             environment {
+//                 AWS_ACCESS_KEY_ID = credentials('jenkins_aws_access_key_id')
+//                 AWS_SECRET_ACCESS_KEY = credentials('jenkins_aws_secret_access_key')
+//                 AWS_DEFAULT_REGION = 'us-east-1'
+//             }
+//             steps {
+//                 script {
+//                     echo 'Deploying to AWS...'
+//                     sh "kubectl create deployment nginx-deployment --image=nginx"
+//                 }
+//             }
+//
+//         }
 
         // stage("Increment version") {
         //     steps {
