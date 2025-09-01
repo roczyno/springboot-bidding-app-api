@@ -11,22 +11,27 @@ pipeline {
                         script {
                             echo "Incrementing Application Version"
 
-                            sh '''mvn build-helper:parse-version versions:set \
-                                -DnewVersion=\\${parsed.majorVersion}.\\${parsed.minorVersion}.\\${parsed.incrementalVersion} \
-                                versions:commit'''
+                            // Bump patch version (X.Y.(Z+1))
+                            sh '''
+                                mvn build-helper:parse-version versions:set \
+                                    -DnewVersion=\\${parsed.majorVersion}.\\${parsed.minorVersion}.\\${parsed.nextIncrementalVersion} \
+                                    versions:commit
+                            '''
 
-                            def pom = readFile("pom.xml")
-                            def matcher = pom =~ '<version>(.+)</version>'
-                            def version = matcher ? matcher[0][1] : "0.0.0"
+                            // Get the updated version from Maven safely
+                            def version = sh(
+                                script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
+                                returnStdout: true
+                            ).trim()
 
                             echo "Resolved version: ${version}"
 
+                            // Export for later use (Docker image tag, etc.)
                             env.IMAGE_NAME = "${version}-${BUILD_NUMBER}"
                         }
                     }
                 }
 
-        }
 //         stage("deploy to eks"){
 //             environment {
 //                 AWS_ACCESS_KEY_ID = credentials('jenkins_aws_access_key_id')
