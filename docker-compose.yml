@@ -1,13 +1,10 @@
 services:
-  postgres:
-    container_name:
-    image: postgres
-    environment:
-      POSTGRES_USER:
-      POSTGRES_PASSWORD:
-      PGDATA: /var/lib/postgresql/data
-      POSTGRES_DB:
-    volumes:
-      - postgres:/data/postgres
+  app:
+    image: roczyno/java-bid-api
+    container_name: java-bid-api
     ports:
-      - "5432:5432"
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+    env_file:
+      - .env
