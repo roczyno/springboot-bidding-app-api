@@ -7,31 +7,27 @@ pipeline {
 
     stages {
         stage("Increment version") {
-            steps {
-                script {
-                    echo "Incrementing Application Version"
+                    steps {
+                        script {
+                            echo "Incrementing Application Version"
 
-                    // First, parse the current version
-                    sh 'mvn build-helper:parse-version'
-                    
-                    // Then set the new version using the parsed properties
-                    sh '''
-                        mvn versions:set \
-                            -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion} \
-                            versions:commit
-                    '''
+                            sh '''
+                                mvn build-helper:parse-version versions:set \
+                                    -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion}
+                                mvn versions:commit
+                            '''
 
-                    def version = sh(
-                        script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
-                        returnStdout: true
-                    ).trim()
+                            def version = sh(
+                                script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
+                                returnStdout: true
+                            ).trim()
 
-                    echo "Resolved version: ${version}"
+                            echo "Resolved version: ${version}"
 
-                    env.PROJECT_VERSION = version
-                    env.IMAGE_NAME = "${version}-${BUILD_NUMBER}"
-                }
-            }
+                            env.PROJECT_VERSION = version
+                            env.IMAGE_NAME = "${version}-${BUILD_NUMBER}"
+                        }
+                    }
         }
 
         stage("Commit Version Update") {
