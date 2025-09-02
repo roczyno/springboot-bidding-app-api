@@ -117,6 +117,7 @@ stages{
             }
         }
     
+     }
 
     post {
         always {
@@ -129,5 +130,5 @@ stages{
             echo "Pipeline succeeded - Docker image pushed successfully"
         }
     }
-    }
+   
 }
