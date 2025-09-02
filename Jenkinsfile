@@ -50,5 +50,15 @@ pipeline {
                                 }
                             }
           }
+
+          stage("Build Jar") {
+              steps {
+                  script {
+                      echo "Building JAR file"
+                      sh 'mvn clean package -DskipTests'
+                  }
+              }
+          }
+
     }
 }
