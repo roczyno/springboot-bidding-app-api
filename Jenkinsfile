@@ -6,7 +6,7 @@ pipeline {
     }
 
     stages {
-        stage("Increment Version") {
+        stage("Increment version") {
             steps {
                 script {
                     echo "Incrementing Application Version"
@@ -67,7 +67,7 @@ pipeline {
             }
         }
 
-        stage("Build & Push Docker Image") {
+        stage("Build Docker Image and Push") {
             steps {
                 script {
                     echo "Building and pushing Docker image..."
@@ -78,16 +78,25 @@ pipeline {
                             usernameVariable: "USER"
                         )
                     ]) {
-                        withEnv(["DOCKER_USER=${USER}", "DOCKER_PASS=${PASS}"]) {
-                            sh """
-                                echo "\$DOCKER_PASS" | docker login -u "\$DOCKER_USER" --password-stdin
-                                docker build -t roczyno/java-bidding-api:${IMAGE_NAME} .
-                                docker push roczyno/java-bidding-api:${IMAGE_NAME}
-                            """
-                        }
+                        // Use Groovy string interpolation for IMAGE_NAME
+                        sh "docker build -t roczyno/java-bidding-api:${env.IMAGE_NAME} ."
+                        sh 'echo $PASS | docker login -u $USER --password-stdin'
+                        sh "docker push roczyno/java-bidding-api:${env.IMAGE_NAME}"
                     }
                 }
             }
+        }
+    }
+
+    post {
+        always {
+            echo "Pipeline completed"
+        }
+        failure {
+            echo "Pipeline failed - check logs for details"
+        }
+        success {
+            echo "Pipeline succeeded - Docker image pushed successfully"
         }
     }
 }
