@@ -5,47 +5,34 @@ pipeline {
         maven 'Maven 3.9.9'
     }
 
-stages{
+    stages {
+        stage("Increment version") {
+            steps {
+                script {
+                    echo "Incrementing Application Version"
 
+                    // First, parse the current version
+                    sh 'mvn build-helper:parse-version'
+                    
+                    // Then set the new version using the parsed properties
+                    sh '''
+                        mvn versions:set \
+                            -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion} \
+                            versions:commit
+                    '''
 
-    stage("Increment version") {
-                steps {
-                    script {
-                        echo "Incrementing Application Version"
+                    def version = sh(
+                        script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
+                        returnStdout: true
+                    ).trim()
 
-                        // Get current version components
-                        def currentVersion = sh(
-                            script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
-                            returnStdout: true
-                        ).trim()
-                        
-                        echo "Current version: ${currentVersion}"
-                        
-                        // Parse version manually if needed
-                        def versionParts = currentVersion.tokenize('.')
-                        def major = versionParts[0]
-                        def minor = versionParts[1]
-                        def patch = (versionParts[2] as Integer) + 1
-                        
-                        def newVersion = "${major}.${minor}.${patch}"
-                        echo "New version will be: ${newVersion}"
-                        
-                        // Set the new version
-                        sh "mvn versions:set -DnewVersion=${newVersion} versions:commit"
-                        
-                        // Verify the new version
-                        def version = sh(
-                            script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
-                            returnStdout: true
-                        ).trim()
+                    echo "Resolved version: ${version}"
 
-                        echo "Resolved version: ${version}"
-
-                        env.PROJECT_VERSION = version
-                        env.IMAGE_NAME = "${version}-${BUILD_NUMBER}"
-                    }
+                    env.PROJECT_VERSION = version
+                    env.IMAGE_NAME = "${version}-${BUILD_NUMBER}"
                 }
-    }
+            }
+        }
 
         stage("Commit Version Update") {
             steps {
@@ -116,8 +103,7 @@ stages{
                 }
             }
         }
-    
-     }
+    }
 
     post {
         always {
@@ -130,5 +116,4 @@ stages{
             echo "Pipeline succeeded - Docker image pushed successfully"
         }
     }
-   
 }
