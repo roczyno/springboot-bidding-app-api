@@ -72,17 +72,21 @@ pipeline {
                 script {
                     echo "Building and pushing Docker image..."
                     withCredentials([
-                        usernamePassword(
-                            credentialsId: "docker-hub-rep-credentials",
-                            passwordVariable: "PASS",
-                            usernameVariable: "USER"
-                        )
-                    ]) {
-                        sh "docker build -t roczyno/java-bidding-api:${IMAGE_NAME} ."
-                        sh "echo ${PASS} | docker login -u ${USER} --password-stdin"
-                        sh "docker push roczyno/java-bidding-api:${IMAGE_NAME}"
+                                usernamePassword(
+                                    credentialsId: "docker-hub-rep-credentials",
+                                    passwordVariable: "PASS",
+                                    usernameVariable: "USER"
+                                )
+                            ]) {
+                                withEnv(["DOCKER_USER=${USER}", "DOCKER_PASS=${PASS}"]) {
+                                    sh '''
+                                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                                        docker build -t roczyno/java-bidding-api:${IMAGE_NAME} .
+                                        docker push roczyno/java-bidding-api:${IMAGE_NAME}
+                                    '''
+                                }
+                            }
 
-                    }
                 }
             }
         }
