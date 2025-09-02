@@ -5,6 +5,9 @@ pipeline {
         maven 'Maven 3.9.9'
     }
 
+stages{
+
+
     stage("Increment version") {
                 steps {
                     script {
@@ -125,5 +128,6 @@ pipeline {
         success {
             echo "Pipeline succeeded - Docker image pushed successfully"
         }
+    }
     }
 }
