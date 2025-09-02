@@ -11,9 +11,13 @@ pipeline {
                 script {
                     echo "Incrementing Application Version"
 
+                    // First, parse the current version
+                    sh 'mvn build-helper:parse-version'
+                    
+                    // Then set the new version using the parsed properties
                     sh '''
-                        mvn build-helper:parse-version versions:set \
-                            -DnewVersion=\\${parsed.majorVersion}.\\${parsed.minorVersion}.\\${parsed.nextIncrementalVersion} \
+                        mvn versions:set \
+                            -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion} \
                             versions:commit
                     '''
 
@@ -71,6 +75,11 @@ pipeline {
             steps {
                 script {
                     echo "Building and pushing Docker image..."
+                    
+                    // Get the image name safely
+                    def imageName = env.IMAGE_NAME
+                    echo "Using image name: ${imageName}"
+                    
                     withCredentials([
                         usernamePassword(
                             credentialsId: "docker-hub-rep-credentials",
@@ -78,10 +87,18 @@ pipeline {
                             usernameVariable: "USER"
                         )
                     ]) {
-                        // Use Groovy string interpolation for IMAGE_NAME
-                        sh "docker build -t roczyno/java-bidding-api:${env.IMAGE_NAME} ."
-                        sh 'echo $PASS | docker login -u $USER --password-stdin'
-                        sh "docker push roczyno/java-bidding-api:${env.IMAGE_NAME}"
+                        // Use triple-quoted strings to avoid substitution issues
+                        sh """
+                            docker build -t roczyno/java-bidding-api:${imageName} .
+                        """
+                        
+                        sh '''
+                            echo $PASS | docker login -u $USER --password-stdin
+                        '''
+                        
+                        sh """
+                            docker push roczyno/java-bidding-api:${imageName}
+                        """
                     }
                 }
             }
