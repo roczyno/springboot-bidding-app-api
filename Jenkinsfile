@@ -79,7 +79,7 @@ pipeline {
                         )
                     ]) {
                         sh "docker build -t roczyno/java-bidding-api:${IMAGE_NAME} ."
-                        sh "echo $PASS | docker login -u $USER --password-stdin"
+                        sh "echo ${PASS} | docker login -u ${USER} --password-stdin"
                         sh "docker push roczyno/java-bidding-api:${IMAGE_NAME}"
 
                     }
