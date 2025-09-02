@@ -6,7 +6,7 @@ pipeline {
     }
 
     stages {
-        stage("Increment version") {
+        stage("Increment Version") {
             steps {
                 script {
                     echo "Incrementing Application Version"
@@ -67,26 +67,25 @@ pipeline {
             }
         }
 
-        stage("Build Docker Image and Push") {
+        stage("Build & Push Docker Image") {
             steps {
                 script {
                     echo "Building and pushing Docker image..."
                     withCredentials([
-                                usernamePassword(
-                                    credentialsId: "docker-hub-rep-credentials",
-                                    passwordVariable: "PASS",
-                                    usernameVariable: "USER"
-                                )
-                            ]) {
-                                withEnv(["DOCKER_USER=${USER}", "DOCKER_PASS=${PASS}"]) {
-                                    sh '''
-                                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                                        docker build -t roczyno/java-bidding-api:${IMAGE_NAME} .
-                                        docker push roczyno/java-bidding-api:${IMAGE_NAME}
-                                    '''
-                                }
-                            }
-
+                        usernamePassword(
+                            credentialsId: "docker-hub-rep-credentials",
+                            passwordVariable: "PASS",
+                            usernameVariable: "USER"
+                        )
+                    ]) {
+                        withEnv(["DOCKER_USER=${USER}", "DOCKER_PASS=${PASS}"]) {
+                            sh """
+                                echo "\$DOCKER_PASS" | docker login -u "\$DOCKER_USER" --password-stdin
+                                docker build -t roczyno/java-bidding-api:${IMAGE_NAME} .
+                                docker push roczyno/java-bidding-api:${IMAGE_NAME}
+                            """
+                        }
+                    }
                 }
             }
         }
