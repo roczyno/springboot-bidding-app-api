@@ -24,41 +24,67 @@ pipeline {
 
                     echo "Resolved version: ${version}"
 
+                    env.PROJECT_VERSION = version
                     env.IMAGE_NAME = "${version}-${BUILD_NUMBER}"
                 }
             }
         }
 
-         stage("Commit Version Update") {
-                            steps {
-                                script {
-                                    withCredentials([
-                                        usernamePassword(
-                                            credentialsId: 'github-credential',
-                                            usernameVariable: 'USER',
-                                            passwordVariable: 'PASS'
-                                        )
-                                    ]) {
-                                        echo "Committing version change to GitHub"
-                                        sh 'git config user.email "jenkins@gmail.com"'
-                                        sh 'git config user.name "jenkins"'
-                                        sh 'git remote set-url origin https://$USER:$PASS@github.com/roczyno/springboot-bidding-app-api.git'
-                                        sh 'git add pom.xml'
-                                        sh 'git commit -m "ci: version bump" || echo "No changes to commit"'
-                                        sh 'git push origin HEAD:refs/heads/main'
-                                    }
-                                }
-                            }
-          }
+        stage("Commit Version Update") {
+            steps {
+                script {
+                    withCredentials([
+                        usernamePassword(
+                            credentialsId: 'github-credential',
+                            usernameVariable: 'USER',
+                            passwordVariable: 'PASS'
+                        )
+                    ]) {
+                        echo "Committing version change to GitHub"
+                        sh 'git config user.email "jenkins@gmail.com"'
+                        sh 'git config user.name "jenkins"'
+                        sh 'git remote set-url origin https://$USER:$PASS@github.com/roczyno/springboot-bidding-app-api.git'
+                        sh 'git add pom.xml'
+                        sh 'git diff --quiet || git commit -m "ci: version bump"'
+                        sh 'git push origin HEAD:refs/heads/main'
+                    }
+                }
+            }
+        }
 
-          stage("Build Jar") {
-              steps {
-                  script {
-                      echo "Building JAR file"
-                      sh 'mvn clean package -DskipTests'
-                  }
-              }
-          }
+        stage("Build Jar") {
+            steps {
+                script {
+                    echo "Building JAR file"
+                    sh 'mvn clean package -DskipTests'
+                }
+            }
+        }
 
+        stage("Archive Artifact") {
+            steps {
+                archiveArtifacts artifacts: "target/*.jar", fingerprint: true
+            }
+        }
+
+        stage("Build Docker Image and Push") {
+            steps {
+                script {
+                    echo "Building and pushing Docker image..."
+                    withCredentials([
+                        usernamePassword(
+                            credentialsId: "docker-hub-rep-credentials",
+                            passwordVariable: "PASS",
+                            usernameVariable: "USER"
+                        )
+                    ]) {
+                        sh "docker build -t roczyno/java-bidding-api:${IMAGE_NAME} ."
+                        sh 'echo $PASS | docker login -u $USER --password-stdin'
+                        sh "docker push roczyno/java-bidding-api:${IMAGE_NAME}"
+
+                    }
+                }
+            }
+        }
     }
 }
