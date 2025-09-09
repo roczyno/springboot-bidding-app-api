@@ -12,7 +12,7 @@ pipeline {
                     echo "Incrementing version..."
                     sh '''
                         mvn build-helper:parse-version versions:set \
-                          -DnewVersion=${parsed.majorVersion}.${parsed.minorVersion}.${parsed.incrementalVersion} \
+                          -DnewVersion=\\${parsed.majorVersion}.\\${parsed.minorVersion}.\\${parsed.incrementalVersion} \
                           versions:commit
                     '''
                     def pom = new XmlSlurper().parse(new File("pom.xml"))
