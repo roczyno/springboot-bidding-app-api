@@ -31,7 +31,7 @@ pipeline {
                         branches: [[name: '*/main']],
                         userRemoteConfigs: [[
                             url: 'https://github.com/roczyno/java-project-management-api.git',
-                            credentialsId: 'github-credentials'
+                            credentialsId: 'github-credential'
                         ]]
                     ])
 
