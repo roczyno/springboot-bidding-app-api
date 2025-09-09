@@ -35,7 +35,7 @@ pipeline {
                         ]]
                     ])
 
-                    withCredentials([usernamePassword(credentialsId: "github-credentials", passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                    withCredentials([usernamePassword(credentialsId: "github-credential", passwordVariable: 'PASS', usernameVariable: 'USER')]) {
                         sh 'git config user.email "jenkins@gmail.com"'
                         sh 'git config user.name "jenkins"'
                         sh 'git status'
