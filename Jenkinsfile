@@ -15,8 +15,9 @@ pipeline {
                           -DnewVersion=\\${parsed.majorVersion}.\\${parsed.minorVersion}.\\${parsed.incrementalVersion} \
                           versions:commit
                     '''
-                    def pom = new XmlSlurper().parse(new File("pom.xml"))
-                    def version = pom.version.text().trim()
+                    def pomContent = readFile("pom.xml")
+                    def matcher = pomContent =~ '(?m)<version>([^<]+)</version>'
+                    def version = matcher[0][1].trim()
                     env.IMAGE_NAME = "${version}-${BUILD_NUMBER}"
                 }
             }
