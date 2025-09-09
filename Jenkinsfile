@@ -6,47 +6,35 @@ pipeline {
     }
 
     stages {
-        stage("Increment version") {
-                    steps {
-                        script {
-                            echo "Incrementing Application Version"
-
-                            sh '''
-                                mvn build-helper:parse-version versions:set \
-                                    -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion}
-                                mvn versions:commit
-                            '''
-
-                            def version = sh(
-                                script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
-                                returnStdout: true
-                            ).trim()
-
-                            echo "Resolved version: ${version}"
-
-                            env.PROJECT_VERSION = version
-                            env.IMAGE_NAME = "${version}-${BUILD_NUMBER}"
-                        }
-                    }
-        }
-
-        stage("Commit Version Update") {
+        stage ("increment version") {
             steps {
                 script {
-                    withCredentials([
-                        usernamePassword(
-                            credentialsId: 'github-credential',
-                            usernameVariable: 'USER',
-                            passwordVariable: 'PASS'
-                        )
-                    ]) {
-                        echo "Committing version change to GitHub"
+                    echo "Incrementing version..."
+                    sh '''
+                        mvn build-helper:parse-version versions:set \
+                          -DnewVersion=${parsed.majorVersion}.${parsed.minorVersion}.${parsed.incrementalVersion} \
+                          versions:commit
+                    '''
+                    def matcher = readFile("pom.xml") =~ '<version>(.+)</version>'
+                    def version = matcher[0][1]
+                    env.IMAGE_NAME = "${version}-${BUILD_NUMBER}"
+                }
+            }
+        }
+
+        stage('Commit Version update') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: "github-credentials", passwordVariable: 'PASS', usernameVariable: 'USER')]) {
                         sh 'git config user.email "jenkins@gmail.com"'
                         sh 'git config user.name "jenkins"'
-                        sh 'git remote set-url origin https://$USER:$PASS@github.com/roczyno/springboot-bidding-app-api.git'
-                        sh 'git add pom.xml'
-                        sh 'git diff --quiet || git commit -m "ci: version bump"'
-                        sh 'git push origin HEAD:refs/heads/main'
+                        sh 'git status'
+                        sh 'git branch'
+                        sh 'git config'
+                        sh "git remote set-url origin https://${USER}:${PASS}@github.com/roczyno/java-project-management-api.git"
+                        sh 'git add .'
+                        sh 'git commit -m "ci: version bump"'
+                        sh 'git push origin HEAD:main'
                     }
                 }
             }
@@ -61,40 +49,20 @@ pipeline {
             }
         }
 
-        stage("Archive Artifact") {
-            steps {
-                archiveArtifacts artifacts: "target/*.jar", fingerprint: true
-            }
-        }
-
         stage("Build Docker Image and Push") {
             steps {
                 script {
-                    echo "Building and pushing Docker image..."
-                    
-                    // Get the image name safely
-                    def imageName = env.IMAGE_NAME
-                    echo "Using image name: ${imageName}"
-                    
+                    echo 'Building docker image...'
                     withCredentials([
                         usernamePassword(
-                            credentialsId: "docker-hub-rep-credentials",
-                            passwordVariable: "PASS",
-                            usernameVariable: "USER"
+                            credentialsId: "dockerhub-credentials",
+                            passwordVariable: 'PASS',
+                            usernameVariable: 'USER'
                         )
                     ]) {
-                        // Use triple-quoted strings to avoid substitution issues
-                        sh """
-                            docker build -t roczyno/java-bidding-api:${imageName} .
-                        """
-                        
-                        sh '''
-                            echo $PASS | docker login -u $USER --password-stdin
-                        '''
-                        
-                        sh """
-                            docker push roczyno/java-bidding-api:${imageName}
-                        """
+                        sh "docker build -t roczyno/java-project-management-api:${IMAGE_NAME} ."
+                        sh "echo $PASS | docker login -u ${USER} --password-stdin"
+                        sh "docker push roczyno/java-project-management-api:${IMAGE_NAME}"
                     }
                 }
             }
