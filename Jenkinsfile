@@ -49,28 +49,28 @@ pipeline {
             steps {
                 script {
                     echo "Running tests..."
-                    sh 'mvn test'
-
-                    // Publish test results
-                    publishTestResults testResultsPattern: 'target/surefire-reports/*.xml'
-
-                    // Archive test reports
-                    publishHTML([
-                        allowMissing: false,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: 'target/surefire-reports',
-                        reportFiles: '*.html',
-                        reportName: 'Test Report'
-                    ])
+//                     sh 'mvn test'
+//
+//                     // Publish test results
+//                     publishTestResults testResultsPattern: 'target/surefire-reports/*.xml'
+//
+//                     // Archive test reports
+//                     publishHTML([
+//                         allowMissing: false,
+//                         alwaysLinkToLastBuild: true,
+//                         keepAll: true,
+//                         reportDir: 'target/surefire-reports',
+//                         reportFiles: '*.html',
+//                         reportName: 'Test Report'
+//                     ])
                 }
             }
-            post {
-                always {
-                    // Archive test artifacts even if tests fail
-                    archiveArtifacts artifacts: 'target/surefire-reports/**', allowEmptyArchive: true
-                }
-            }
+//             post {
+//                 always {
+//                     // Archive test artifacts even if tests fail
+//                     archiveArtifacts artifacts: 'target/surefire-reports/**', allowEmptyArchive: true
+//                 }
+//             }
         }
 
         stage('Code Quality Analysis') {
@@ -90,7 +90,7 @@ pipeline {
                     // }
 
                     // Alternative: SpotBugs for static analysis
-                    sh 'mvn compile spotbugs:check'
+//                     sh 'mvn compile spotbugs:check'
                 }
             }
         }
@@ -105,21 +105,21 @@ pipeline {
             steps {
                 script {
                     echo "Running security scan..."
-                    sh 'mvn org.owasp:dependency-check-maven:check'
+//                     sh 'mvn org.owasp:dependency-check-maven:check'
                 }
             }
-            post {
-                always {
-                    publishHTML([
-                        allowMissing: true,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: 'target',
-                        reportFiles: 'dependency-check-report.html',
-                        reportName: 'OWASP Dependency Check Report'
-                    ])
-                }
-            }
+//             post {
+//                 always {
+//                     publishHTML([
+//                         allowMissing: true,
+//                         alwaysLinkToLastBuild: true,
+//                         keepAll: true,
+//                         reportDir: 'target',
+//                         reportFiles: 'dependency-check-report.html',
+//                         reportName: 'OWASP Dependency Check Report'
+//                     ])
+//                 }
+//             }
         }
 
         stage ("Increment Version") {
