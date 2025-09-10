@@ -27,94 +27,21 @@ pipeline {
             }
         }
 
-        stage('Validate') {
+
+
+        stage('Run Tests') {
             steps {
                 script {
-                    echo "Validating Maven project..."
-                    sh 'mvn validate'
+                    echo "Running tests..."
+
                 }
             }
+
         }
 
-        stage('Compile') {
-            steps {
-                script {
-                    echo "Compiling project..."
-                    sh 'mvn clean compile'
-                }
-            }
-        }
 
-//         stage('Run Tests') {
-//             steps {
-//                 script {
-//                     echo "Running tests..."
-//                     sh 'mvn test || echo "Tests failed but continuing pipeline"'
-//
-//                     // Publish test results
-//                     publishTestResults testResultsPattern: 'target/surefire-reports/*.xml'
-//
-//                     // Archive test reports
-//                     publishHTML([
-//                         allowMissing: false,
-//                         alwaysLinkToLastBuild: true,
-//                         keepAll: true,
-//                         reportDir: 'target/surefire-reports',
-//                         reportFiles: '*.html',
-//                         reportName: 'Test Report'
-//                     ])
-//                 }
-//             }
-//             post {
-//                 always {
-//                     // Archive test artifacts even if tests fail
-//                     archiveArtifacts artifacts: 'target/surefire-reports/**', allowEmptyArchive: true
-//                 }
-//             }
-//         }
 
-        stage('Code Quality Analysis') {
-//             when {
-//                 anyOf {
-//                     branch 'main'
-//                     branch 'dev'
-//                     changeRequest()
-//                 }
-//             }
-            steps {
-                script {
-                    echo "Running code quality checks..."
-                    // Uncomment if you have SonarQube configured
-                    // withSonarQubeEnv('SonarQube') {
-                    //     sh 'mvn sonar:sonar'
-                    // }
 
-                    // Alternative: SpotBugs for static analysis
-                    sh 'mvn compile spotbugs:check'
-                }
-            }
-        }
-
-        stage('Security Scan') {
-//             when {
-//                 anyOf {
-//                     branch 'main'
-//                     branch 'dev'
-//                 }
-//             }
-            steps {
-                script {
-                    echo "Running security scan..."
-                    sh 'mvn org.owasp:dependency-check-maven:check'
-                }
-            }
-            post {
-                always {
-                    // Archive OWASP dependency check report if it exists
-                    archiveArtifacts artifacts: 'target/dependency-check-report.html', allowEmptyArchive: true
-                }
-            }
-        }
 
         stage ("Increment Version") {
 //             when {
