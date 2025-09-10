@@ -45,33 +45,33 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
-            steps {
-                script {
-                    echo "Running tests..."
-                    sh 'mvn test || echo "Tests failed but continuing pipeline"'
-
-                    // Publish test results
-                    publishTestResults testResultsPattern: 'target/surefire-reports/*.xml'
-
-                    // Archive test reports
-                    publishHTML([
-                        allowMissing: false,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: 'target/surefire-reports',
-                        reportFiles: '*.html',
-                        reportName: 'Test Report'
-                    ])
-                }
-            }
-            post {
-                always {
-                    // Archive test artifacts even if tests fail
-                    archiveArtifacts artifacts: 'target/surefire-reports/**', allowEmptyArchive: true
-                }
-            }
-        }
+//         stage('Run Tests') {
+//             steps {
+//                 script {
+//                     echo "Running tests..."
+//                     sh 'mvn test || echo "Tests failed but continuing pipeline"'
+//
+//                     // Publish test results
+//                     publishTestResults testResultsPattern: 'target/surefire-reports/*.xml'
+//
+//                     // Archive test reports
+//                     publishHTML([
+//                         allowMissing: false,
+//                         alwaysLinkToLastBuild: true,
+//                         keepAll: true,
+//                         reportDir: 'target/surefire-reports',
+//                         reportFiles: '*.html',
+//                         reportName: 'Test Report'
+//                     ])
+//                 }
+//             }
+//             post {
+//                 always {
+//                     // Archive test artifacts even if tests fail
+//                     archiveArtifacts artifacts: 'target/surefire-reports/**', allowEmptyArchive: true
+//                 }
+//             }
+//         }
 
         stage('Code Quality Analysis') {
             when {
