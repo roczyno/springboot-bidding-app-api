@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.roczyno</groupId>
 	<artifactId>springboot-bidding-app-api</artifactId>
-	<version>0.0.2</version>
+	<version>0.0.3</version>
 	<name>springboot-bidding-app-api</name>
 	<description>springboot-bidding-app-api</description>
 	<url/>
