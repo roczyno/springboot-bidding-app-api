@@ -32,7 +32,7 @@ pipeline {
                                 sh 'git status'
                                 sh 'git branch'
                                 git 'git config'
-                                sh" git remote set-url origin https://${USER}:${PASS}@github.com/roczyno/java-project-management-api.git"
+                                sh" git remote set-url origin https://${USER}:${PASS}@github.com/roczyno/springboot-bidding-app-api.git"
                                 sh 'git add .'
                                 sh 'git commit -m "ci: version bump"'
                                 sh 'git push origin HEAD:main'
