@@ -26,12 +26,12 @@ pipeline {
          stage('Commit Version update'){
                     steps{
                         script {
-                            withCredentials([usernamePassword(credentials,"github-credential",passwordVariable:'PASS',usernameVariable:'USER')]){
+                            withCredentials([usernamePassword(credentialsId:,"github-credentials",passwordVariable:'PASS',usernameVariable:'USER')]){
                                 sh 'git config user.email "jenkins@gmail.com"'
                                 sh 'git config user.name "jenkins"'
                                 sh 'git status'
                                 sh 'git branch'
-                                sh 'git config'
+                                git 'git config'
                                 sh" git remote set-url origin https://${USER}:${PASS}@github.com/roczyno/java-project-management-api.git"
                                 sh 'git add .'
                                 sh 'git commit -m "ci: version bump"'
