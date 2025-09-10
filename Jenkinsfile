@@ -206,8 +206,6 @@ stage ("Increment Version") {
                         echo "Docker image: ${env.DOCKER_IMAGE}"
                     }
                 }
-        unstable {
-            echo "Pipeline completed with warnings"
-        }
+
     }
 }
