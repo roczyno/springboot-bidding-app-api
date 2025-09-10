@@ -43,45 +43,45 @@ pipeline {
 
 
 
-        stage ("Increment Version") {
-//             when {
-//                 anyOf {
-//                     branch 'main'
-//                     branch 'dev'
-//                 }
-//             }
-            steps {
-                script {
-                    echo "Incrementing version..."
+       stage ("Increment Version") {
+//                    when {
+//                        anyOf {
+//                            branch 'main'
+//                            branch 'dev'
+//                        }
+//                    }
+                   steps {
+                       script {
+                           echo "Incrementing version..."
 
-                    // Get current version first
-                    def currentVersion = sh(
-                        script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
-                        returnStdout: true
-                    ).trim()
-                    echo "Current version: ${currentVersion}"
+                           // Get current version first
+                           def currentVersion = sh(
+                               script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
+                               returnStdout: true
+                           ).trim()
+                           echo "Current version: ${currentVersion}"
 
-                    // Increment version
-                    sh '''
-                        mvn build-helper:parse-version versions:set \
-                          -DnewVersion=\\${parsed.majorVersion}.\\${parsed.minorVersion}.\\${parsed.nextIncrementalVersion} \
-                          versions:commit
-                    '''
+                           // Increment version
+                           sh '''
+                               mvn build-helper:parse-version versions:set \
+                                 -DnewVersion=\\${parsed.majorVersion}.\\${parsed.minorVersion}.\\${parsed.nextIncrementalVersion} \
+                                 versions:commit
+                           '''
 
-                    def newVersion = sh(
-                        script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
-                        returnStdout: true
-                    ).trim()
+                           def newVersion = sh(
+                               script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
+                               returnStdout: true
+                           ).trim()
 
-                    echo "New version: ${newVersion}"
-                    env.NEW_VERSION = newVersion
-                    env.IMAGE_NAME = "${newVersion}-${BUILD_NUMBER}"
+                           echo "New version: ${newVersion}"
+                           env.NEW_VERSION = newVersion
+                           env.IMAGE_NAME = "${newVersion}-${BUILD_NUMBER}"
 
-                    // Create git tag for the version
-                    env.GIT_TAG = "v${newVersion}"
-                }
-            }
-        }
+                           // Create git tag for the version
+                           env.GIT_TAG = "v${newVersion}"
+                       }
+                   }
+               }
 
         stage('Commit Version Update') {
 //             when {
