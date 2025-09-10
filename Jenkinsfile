@@ -6,6 +6,30 @@ pipeline {
     }
 
     stages {
+        stage('Checkout') {
+            steps {
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '**']], // checkout the branch Jenkins is building
+                    doGenerateSubmoduleConfigurations: false,
+                    extensions: [[$class: 'LocalBranch', localBranch: '**']], // ensure no detached HEAD
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/roczyno/springboot-bidding-app-api.git',
+                        credentialsId: 'github-credential' // GitHub PAT
+                    ]]
+                ])
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                script {
+                    echo "Running tests..."
+                    sh 'mvn clean test'
+                }
+            }
+        }
+
         stage ("Increment Version") {
             when {
                 expression {
@@ -81,12 +105,12 @@ pipeline {
             steps {
                 script {
                     echo 'Building docker image...'
-                    withCredentials([usernamePassword(credentialsId: "dockerhub-credentials", passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                    withCredentials([usernamePassword(credentialsId: "docker-hub-rep-credentials", passwordVariable: 'PASS', usernameVariable: 'USER')]) {
                         def branch = env.GIT_BRANCH?.replaceFirst(/^origin\//, '') ?: "main"
 
-                         sh "docker build -t roczyno/java-bid-api:${IMAGE_NAME} ."
-                         sh "echo $PASS | docker login -u ${USER} --password-stdin"
-                         sh "docker push roczyno/java-bid-api:${IMAGE_NAME}"
+                        sh "docker build -t roczyno/java-bid-app:${IMAGE_NAME} ."
+                        sh "echo $PASS | docker login -u ${USER} --password-stdin"
+                        sh "docker push roczyno/java-bid-app:${IMAGE_NAME}"
                     }
                 }
             }
