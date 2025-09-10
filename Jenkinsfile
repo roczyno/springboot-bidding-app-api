@@ -53,9 +53,6 @@ stage ("Increment Version") {
                 returnStdout: true
             ).trim()
             echo "Current version: ${currentVersion}"
-
-            // Method 1: Use versions:set with explicit version calculation
-            // Parse the current version manually
             def versionParts = currentVersion.tokenize('.')
             def major = versionParts[0] as Integer
             def minor = versionParts[1] as Integer
@@ -63,25 +60,18 @@ stage ("Increment Version") {
             def newPatch = patch + 1
             def newVersion = "${major}.${minor}.${newPatch}"
 
-            // Set the new version
+
             sh "mvn versions:set -DnewVersion=${newVersion} versions:commit"
 
             echo "New version: ${newVersion}"
             env.NEW_VERSION = newVersion
             env.IMAGE_NAME = "${newVersion}-${BUILD_NUMBER}"
-
-            // Create git tag for the version
             env.GIT_TAG = "v${newVersion}"
         }
     }
 }
         stage('Commit Version Update') {
-//             when {
-//                 anyOf {
-//                     branch 'main'
-//                     branch 'dev'
-//                 }
-//             }
+
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: "github-credential", passwordVariable: 'PASS', usernameVariable: 'USER')]) {
@@ -115,69 +105,49 @@ stage ("Increment Version") {
         }
 
         stage("Build Jar") {
-//             when {
-//                 anyOf {
-//                     branch 'main'
-//                     branch 'dev'
-//                 }
-//             }
+
             steps {
                 script {
                     echo "Building JAR file..."
                     sh 'mvn clean package -DskipTests'
 
-                    // Archive the built JAR
+
                     archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
                 }
             }
         }
 
         stage("Build and Push Docker Image") {
-//             when {
-//                 anyOf {
-//                     branch 'main'
-//                     branch 'dev'
-//                 }
-//             }
             steps {
                 script {
-                    echo "Building Docker image: ${DOCKER_REGISTRY}/${APP_NAME}:${IMAGE_NAME}"
+
+                    def imageTag = "${env.NEW_VERSION}-${BUILD_NUMBER}"
+
+                    def fullImageName = "${DOCKER_REGISTRY}/${APP_NAME}:${imageTag}"
+
+                    echo "Building Docker image: ${fullImageName}"
 
                     withCredentials([usernamePassword(credentialsId: "docker-hub-rep-credentials", passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-                        def branch = env.GIT_BRANCH?.replaceFirst(/^origin\//, '') ?: "main"
 
-                        // Build image with multiple tags
-                        sh "docker build -t ${DOCKER_REGISTRY}/${APP_NAME}:${IMAGE_NAME} ."
-                        sh "docker tag ${DOCKER_REGISTRY}/${APP_NAME}:${IMAGE_NAME} ${DOCKER_REGISTRY}/${APP_NAME}:${branch}-latest"
+                        // Build single image with one tag
+                        sh "docker build -t ${fullImageName} ."
 
-                        if (branch == 'main') {
-                            sh "docker tag ${DOCKER_REGISTRY}/${APP_NAME}:${IMAGE_NAME} ${DOCKER_REGISTRY}/${APP_NAME}:latest"
-                        }
-
-                        // Login and push
+                        // Login and push single image
                         sh "echo \$PASS | docker login -u ${USER} --password-stdin"
-                        sh "docker push ${DOCKER_REGISTRY}/${APP_NAME}:${IMAGE_NAME}"
-                        sh "docker push ${DOCKER_REGISTRY}/${APP_NAME}:${branch}-latest"
+                        sh "docker push ${fullImageName}"
 
-                        if (branch == 'main') {
-                            sh "docker push ${DOCKER_REGISTRY}/${APP_NAME}:latest"
-                        }
+                        echo "Docker image pushed successfully: ${fullImageName}"
 
-                        echo "Docker images pushed successfully"
+                        // Store the image name for later use
+                        env.DOCKER_IMAGE = fullImageName
                     }
                 }
             }
             post {
                 always {
-                    // Clean up local images to save disk space
+                    // Clean up local image to save disk space
                     script {
-                        sh """
-                            docker rmi ${DOCKER_REGISTRY}/${APP_NAME}:${IMAGE_NAME} || true
-                            docker rmi ${DOCKER_REGISTRY}/${APP_NAME}:${env.GIT_BRANCH?.replaceFirst(/^origin\//, '') ?: 'main'}-latest || true
-                        """
-                        if (env.GIT_BRANCH?.replaceFirst(/^origin\//, '') == 'main') {
-                            sh "docker rmi ${DOCKER_REGISTRY}/${APP_NAME}:latest || true"
-                        }
+                        sh "docker rmi ${DOCKER_REGISTRY}/${APP_NAME}:${imageTag} || true"
                     }
                 }
             }
