@@ -49,7 +49,7 @@ pipeline {
             steps {
                 script {
                     echo "Running tests..."
-//                     sh 'mvn test'
+                    sh 'mvn test'
 
                     // Publish test results
                     publishTestResults testResultsPattern: 'target/surefire-reports/*.xml'
@@ -110,14 +110,8 @@ pipeline {
             }
             post {
                 always {
-                    publishHTML([
-                        allowMissing: true,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: 'target',
-                        reportFiles: 'dependency-check-report.html',
-                        reportName: 'OWASP Dependency Check Report'
-                    ])
+                    // Archive OWASP dependency check report if it exists
+                    archiveArtifacts artifacts: 'target/dependency-check-report.html', allowEmptyArchive: true
                 }
             }
         }
@@ -324,9 +318,16 @@ pipeline {
         }
         success {
             script {
-                echo "Pipeline succeeded"
+                echo "✅ Pipeline succeeded"
                 if (env.IMAGE_NAME) {
-                    echo "Docker image: ${DOCKER_REGISTRY}/${APP_NAME}:${IMAGE_NAME}"
+                    echo "🐳 Docker image: ${DOCKER_REGISTRY}/${APP_NAME}:${IMAGE_NAME}"
+                }
+
+                // Different messages based on build result
+                if (currentBuild.result == 'UNSTABLE') {
+                    echo "⚠️  Note: Build succeeded but tests failed (CONTINUE_ON_TEST_FAILURE was enabled)"
+                } else {
+                    echo "🎉 All stages completed successfully!"
                 }
 
                 // Send success notification
