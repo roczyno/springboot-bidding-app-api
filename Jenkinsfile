@@ -27,51 +27,46 @@ pipeline {
             }
         }
 
-
-
         stage('Run Tests') {
             steps {
                 script {
                     echo "Running tests..."
-
+                    // Add your test commands here when ready
+                    // sh 'mvn test'
                 }
             }
-
         }
 
+        stage ("Increment Version") {
+            steps {
+                script {
+                    echo "Incrementing version..."
 
+                    // Get current version first
+                    def currentVersion = sh(
+                        script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
+                        returnStdout: true
+                    ).trim()
+                    echo "Current version: ${currentVersion}"
 
+                    def versionParts = currentVersion.tokenize('.')
+                    def major = versionParts[0] as Integer
+                    def minor = versionParts[1] as Integer
+                    def patch = versionParts[2] as Integer
+                    def newPatch = patch + 1
+                    def newVersion = "${major}.${minor}.${newPatch}"
 
-stage ("Increment Version") {
-    steps {
-        script {
-            echo "Incrementing version..."
+                    sh "mvn versions:set -DnewVersion=${newVersion} versions:commit"
 
-            // Get current version first
-            def currentVersion = sh(
-                script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
-                returnStdout: true
-            ).trim()
-            echo "Current version: ${currentVersion}"
-            def versionParts = currentVersion.tokenize('.')
-            def major = versionParts[0] as Integer
-            def minor = versionParts[1] as Integer
-            def patch = versionParts[2] as Integer
-            def newPatch = patch + 1
-            def newVersion = "${major}.${minor}.${newPatch}"
-
-
-            sh "mvn versions:set -DnewVersion=${newVersion} versions:commit"
-
-            echo "New version: ${newVersion}"
-            env.NEW_VERSION = newVersion
-            env.IMAGE_NAME = "${newVersion}-${BUILD_NUMBER}"
-            env.GIT_TAG = "v${newVersion}"
+                    echo "New version: ${newVersion}"
+                    env.NEW_VERSION = newVersion
+                    env.IMAGE_NAME = "${newVersion}-${BUILD_NUMBER}"
+                    env.GIT_TAG = "v${newVersion}"
+                }
+            }
         }
-    }
-}
+
         stage('Commit Version Update') {
-
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: "github-credential", passwordVariable: 'PASS', usernameVariable: 'USER')]) {
@@ -105,12 +100,10 @@ stage ("Increment Version") {
         }
 
         stage("Build Jar") {
-
             steps {
                 script {
                     echo "Building JAR file..."
                     sh 'mvn clean package -DskipTests'
-
 
                     archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
                 }
@@ -140,7 +133,7 @@ stage ("Increment Version") {
             post {
                 always {
                     script {
-                        // Now we can use the environment variable
+                        // Clean up local image to save disk space
                         sh "docker rmi ${DOCKER_REGISTRY}/${APP_NAME}:${env.IMAGE_TAG} || true"
                     }
                 }
@@ -201,11 +194,14 @@ stage ("Increment Version") {
         }
         success {
             script {
-                    echo "Pipeline succeeded"
-                    if (env.DOCKER_IMAGE) {
-                        echo "Docker image: ${env.DOCKER_IMAGE}"
-                    }
+                echo "Pipeline succeeded"
+                if (env.DOCKER_IMAGE) {
+                    echo "Docker image: ${env.DOCKER_IMAGE}"
                 }
-
+            }
+        }
+        unstable {
+            echo "Pipeline completed with warnings"
+        }
     }
 }
