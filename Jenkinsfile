@@ -12,19 +12,6 @@ pipeline {
     }
 
     stages {
-        stage('Setup Branch Helper') {
-            steps {
-                script {
-                    // Function to check if current branch matches a list
-                    env.BRANCH_NAME_STRIPPED = env.GIT_BRANCH?.replaceFirst(/^origin\//, '')
-
-                    branchMatches = { allowedBranches ->
-                        return allowedBranches.contains(env.BRANCH_NAME_STRIPPED)
-                    }
-                }
-            }
-        }
-
         stage('Checkout') {
             steps {
                 checkout([
@@ -42,54 +29,118 @@ pipeline {
 
         stage('Validate') {
             steps {
-                sh 'mvn validate'
+                script {
+                    echo "Validating Maven project..."
+                    sh 'mvn validate'
+                }
             }
         }
 
         stage('Compile') {
             steps {
-                sh 'mvn clean compile'
+                script {
+                    echo "Compiling project..."
+                    sh 'mvn clean compile'
+                }
             }
         }
 
         stage('Run Tests') {
             steps {
-                echo "Running tests..."
-                // sh 'mvn test'
+                script {
+                    echo "Running tests..."
+//                     sh 'mvn test'
+
+                    // Publish test results
+                    publishTestResults testResultsPattern: 'target/surefire-reports/*.xml'
+
+                    // Archive test reports
+                    publishHTML([
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: 'target/surefire-reports',
+                        reportFiles: '*.html',
+                        reportName: 'Test Report'
+                    ])
+                }
+            }
+            post {
+                always {
+                    // Archive test artifacts even if tests fail
+                    archiveArtifacts artifacts: 'target/surefire-reports/**', allowEmptyArchive: true
+                }
             }
         }
 
         stage('Code Quality Analysis') {
             when {
-                expression { branchMatches(['main','dev']) }
+                anyOf {
+                    branch 'main'
+                    branch 'dev'
+                    changeRequest()
+                }
             }
             steps {
-                echo "Running code quality checks..."
+                script {
+                    echo "Running code quality checks..."
+                    // Uncomment if you have SonarQube configured
+                    // withSonarQubeEnv('SonarQube') {
+                    //     sh 'mvn sonar:sonar'
+                    // }
+
+                    // Alternative: SpotBugs for static analysis
+                    sh 'mvn compile spotbugs:check'
+                }
             }
         }
 
         stage('Security Scan') {
             when {
-                expression { branchMatches(['main','dev']) }
+                anyOf {
+                    branch 'main'
+                    branch 'dev'
+                }
             }
             steps {
-                echo "Running security scan..."
+                script {
+                    echo "Running security scan..."
+                    sh 'mvn org.owasp:dependency-check-maven:check'
+                }
+            }
+            post {
+                always {
+                    publishHTML([
+                        allowMissing: true,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: 'target',
+                        reportFiles: 'dependency-check-report.html',
+                        reportName: 'OWASP Dependency Check Report'
+                    ])
+                }
             }
         }
 
-        stage('Increment Version') {
+        stage ("Increment Version") {
             when {
-                expression { branchMatches(['main','dev']) }
+                anyOf {
+                    branch 'main'
+                    branch 'dev'
+                }
             }
             steps {
                 script {
                     echo "Incrementing version..."
+
+                    // Get current version first
                     def currentVersion = sh(
                         script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
                         returnStdout: true
                     ).trim()
                     echo "Current version: ${currentVersion}"
 
+                    // Increment version
                     sh '''
                         mvn build-helper:parse-version versions:set \
                           -DnewVersion=\\${parsed.majorVersion}.\\${parsed.minorVersion}.\\${parsed.nextIncrementalVersion} \
@@ -104,6 +155,8 @@ pipeline {
                     echo "New version: ${newVersion}"
                     env.NEW_VERSION = newVersion
                     env.IMAGE_NAME = "${newVersion}-${BUILD_NUMBER}"
+
+                    // Create git tag for the version
                     env.GIT_TAG = "v${newVersion}"
                 }
             }
@@ -111,7 +164,10 @@ pipeline {
 
         stage('Commit Version Update') {
             when {
-                expression { branchMatches(['main','dev']) }
+                anyOf {
+                    branch 'main'
+                    branch 'dev'
+                }
             }
             steps {
                 script {
@@ -119,60 +175,96 @@ pipeline {
                         sh 'git config user.email "jenkins@jenkins.local"'
                         sh 'git config user.name "Jenkins CI"'
 
-                        def branch = env.BRANCH_NAME_STRIPPED ?: "main"
+                        def branch = env.GIT_BRANCH?.replaceFirst(/^origin\//, '') ?: "main"
+                        echo "Working on branch: ${branch}"
+
                         sh "git remote set-url origin https://${USER}:${PASS}@github.com/${GITHUB_REPO}.git"
 
-                        def hasChanges = sh(script: 'git diff --name-only', returnStdout: true).trim()
+                        // Check if there are changes to commit
+                        def hasChanges = sh(
+                            script: 'git diff --name-only',
+                            returnStdout: true
+                        ).trim()
+
                         if (hasChanges) {
                             sh 'git add pom.xml'
                             sh "git commit -m 'ci: bump version to ${env.NEW_VERSION} [skip ci]'"
                             sh "git tag -a ${env.GIT_TAG} -m 'Release version ${env.NEW_VERSION}'"
                             sh "git push origin HEAD:${branch}"
                             sh "git push origin ${env.GIT_TAG}"
+                            echo "Version bumped and tagged: ${env.GIT_TAG}"
+                        } else {
+                            echo "No version changes to commit"
                         }
                     }
                 }
             }
         }
 
-        stage('Build Jar') {
+        stage("Build Jar") {
             when {
-                expression { branchMatches(['main','dev']) }
-            }
-            steps {
-                sh 'mvn clean package -DskipTests'
-                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
-            }
-        }
-
-        stage('Build and Push Docker Image') {
-            when {
-                expression { branchMatches(['main','dev']) }
+                anyOf {
+                    branch 'main'
+                    branch 'dev'
+                }
             }
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: "docker-hub-rep-credentials", passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-                        def branch = env.BRANCH_NAME_STRIPPED ?: "main"
+                    echo "Building JAR file..."
+                    sh 'mvn clean package -DskipTests'
 
+                    // Archive the built JAR
+                    archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+                }
+            }
+        }
+
+        stage("Build and Push Docker Image") {
+            when {
+                anyOf {
+                    branch 'main'
+                    branch 'dev'
+                }
+            }
+            steps {
+                script {
+                    echo "Building Docker image: ${DOCKER_REGISTRY}/${APP_NAME}:${IMAGE_NAME}"
+
+                    withCredentials([usernamePassword(credentialsId: "docker-hub-rep-credentials", passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                        def branch = env.GIT_BRANCH?.replaceFirst(/^origin\//, '') ?: "main"
+
+                        // Build image with multiple tags
                         sh "docker build -t ${DOCKER_REGISTRY}/${APP_NAME}:${IMAGE_NAME} ."
                         sh "docker tag ${DOCKER_REGISTRY}/${APP_NAME}:${IMAGE_NAME} ${DOCKER_REGISTRY}/${APP_NAME}:${branch}-latest"
 
-                        if (branch == 'main') sh "docker tag ${DOCKER_REGISTRY}/${APP_NAME}:${IMAGE_NAME} ${DOCKER_REGISTRY}/${APP_NAME}:latest"
+                        if (branch == 'main') {
+                            sh "docker tag ${DOCKER_REGISTRY}/${APP_NAME}:${IMAGE_NAME} ${DOCKER_REGISTRY}/${APP_NAME}:latest"
+                        }
 
+                        // Login and push
                         sh "echo \$PASS | docker login -u ${USER} --password-stdin"
                         sh "docker push ${DOCKER_REGISTRY}/${APP_NAME}:${IMAGE_NAME}"
                         sh "docker push ${DOCKER_REGISTRY}/${APP_NAME}:${branch}-latest"
 
-                        if (branch == 'main') sh "docker push ${DOCKER_REGISTRY}/${APP_NAME}:latest"
+                        if (branch == 'main') {
+                            sh "docker push ${DOCKER_REGISTRY}/${APP_NAME}:latest"
+                        }
+
+                        echo "Docker images pushed successfully"
                     }
                 }
             }
             post {
                 always {
+                    // Clean up local images to save disk space
                     script {
-                        sh "docker rmi ${DOCKER_REGISTRY}/${APP_NAME}:${IMAGE_NAME} || true"
-                        sh "docker rmi ${DOCKER_REGISTRY}/${APP_NAME}:${env.BRANCH_NAME_STRIPPED}-latest || true"
-                        if (env.BRANCH_NAME_STRIPPED == 'main') sh "docker rmi ${DOCKER_REGISTRY}/${APP_NAME}:latest || true"
+                        sh """
+                            docker rmi ${DOCKER_REGISTRY}/${APP_NAME}:${IMAGE_NAME} || true
+                            docker rmi ${DOCKER_REGISTRY}/${APP_NAME}:${env.GIT_BRANCH?.replaceFirst(/^origin\//, '') ?: 'main'}-latest || true
+                        """
+                        if (env.GIT_BRANCH?.replaceFirst(/^origin\//, '') == 'main') {
+                            sh "docker rmi ${DOCKER_REGISTRY}/${APP_NAME}:latest || true"
+                        }
                     }
                 }
             }
@@ -180,20 +272,27 @@ pipeline {
 
         stage('Deploy to Staging') {
             when {
-                expression { branchMatches(['dev']) }
+                branch 'dev'
             }
             steps {
-                echo "Deploying to staging environment..."
+                script {
+                    echo "Deploying to staging environment..."
+                    // Add your staging deployment logic here
+                    // Example: kubectl, docker-compose, or API calls to your deployment system
+                }
             }
         }
 
         stage('Deploy to Production') {
             when {
-                expression { branchMatches(['main']) }
+                branch 'main'
             }
             steps {
                 input message: 'Deploy to Production?', ok: 'Deploy'
-                echo "Deploying to production environment..."
+                script {
+                    echo "Deploying to production environment..."
+                    // Add your production deployment logic here
+                }
             }
         }
     }
@@ -201,7 +300,44 @@ pipeline {
     post {
         always {
             echo "Pipeline completed for ${env.GIT_BRANCH}"
-            cleanWs()
+
+            // Clean workspace conditionally
+            script {
+                if (currentBuild.result != 'SUCCESS') {
+                    echo "Build failed, preserving workspace for debugging"
+                } else {
+                    cleanWs()
+                }
+            }
+        }
+        failure {
+            script {
+                echo "Pipeline failed - check logs for details"
+
+                // Send notification (uncomment and configure as needed)
+                // emailext (
+                //     subject: "Build Failed: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
+                //     body: "Build failed. Check console output at ${env.BUILD_URL}",
+                //     to: "${env.CHANGE_AUTHOR_EMAIL}"
+                // )
+            }
+        }
+        success {
+            script {
+                echo "Pipeline succeeded"
+                if (env.IMAGE_NAME) {
+                    echo "Docker image: ${DOCKER_REGISTRY}/${APP_NAME}:${IMAGE_NAME}"
+                }
+
+                // Send success notification
+                // slackSend (
+                //     color: 'good',
+                //     message: ":white_check_mark: Build successful: ${env.JOB_NAME} - ${env.BUILD_NUMBER}"
+                // )
+            }
+        }
+        unstable {
+            echo "Pipeline completed with warnings"
         }
     }
 }
