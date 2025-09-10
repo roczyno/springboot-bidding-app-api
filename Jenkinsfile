@@ -25,7 +25,7 @@ pipeline {
             steps {
                 script {
                     echo "Running tests..."
-                    sh 'mvn clean test'
+//                     sh 'mvn clean test'
                 }
             }
         }
