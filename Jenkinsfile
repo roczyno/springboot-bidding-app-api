@@ -120,34 +120,28 @@ stage ("Increment Version") {
         stage("Build and Push Docker Image") {
             steps {
                 script {
-
                     def imageTag = "${env.NEW_VERSION}-${BUILD_NUMBER}"
-
                     def fullImageName = "${DOCKER_REGISTRY}/${APP_NAME}:${imageTag}"
+
+                    // Store for cleanup and reporting
+                    env.IMAGE_TAG = imageTag
+                    env.DOCKER_IMAGE = fullImageName
 
                     echo "Building Docker image: ${fullImageName}"
 
                     withCredentials([usernamePassword(credentialsId: "docker-hub-rep-credentials", passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-
-                        // Build single image with one tag
                         sh "docker build -t ${fullImageName} ."
-
-                        // Login and push single image
                         sh "echo \$PASS | docker login -u ${USER} --password-stdin"
                         sh "docker push ${fullImageName}"
-
                         echo "Docker image pushed successfully: ${fullImageName}"
-
-                        // Store the image name for later use
-                        env.DOCKER_IMAGE = fullImageName
                     }
                 }
             }
             post {
                 always {
-                    // Clean up local image to save disk space
                     script {
-                        sh "docker rmi ${DOCKER_REGISTRY}/${APP_NAME}:${imageTag} || true"
+                        // Now we can use the environment variable
+                        sh "docker rmi ${DOCKER_REGISTRY}/${APP_NAME}:${env.IMAGE_TAG} || true"
                     }
                 }
             }
@@ -207,18 +201,11 @@ stage ("Increment Version") {
         }
         success {
             script {
-                echo "Pipeline succeeded"
-                if (env.IMAGE_NAME) {
-                    echo "Docker image: ${DOCKER_REGISTRY}/${APP_NAME}:${IMAGE_NAME}"
+                    echo "Pipeline succeeded"
+                    if (env.DOCKER_IMAGE) {
+                        echo "Docker image: ${env.DOCKER_IMAGE}"
+                    }
                 }
-
-                // Send success notification
-                // slackSend (
-                //     color: 'good',
-                //     message: ":white_check_mark: Build successful: ${env.JOB_NAME} - ${env.BUILD_NUMBER}"
-                // )
-            }
-        }
         unstable {
             echo "Pipeline completed with warnings"
         }
