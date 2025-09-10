@@ -140,10 +140,29 @@ pipeline {
             }
         }
 
+        stage("provision server"){
+                    //tf provision server resources
+            environment {
+                AWS_ACCESS_KEY_ID=('jenkins_aws_access_key_id')
+                AWS_SECRET_ACCESS_KEY('jenkins_aws_secret_access_key')
+                TF_VAR_env_prefix='text'
+            }
+            steps {
+                script {
+                    dir('terraform'){
+                        sh 'terraform init'
+                        sh 'terraform apply --aut-approve '
+                       EC2_PUBLIC_IP= sh (
+                       script: "terraform output ec2_public_ip",
+                       returnstdout: true
+                       ).trim()
+                    }
+                }
+            }
+        }
+
         stage('Deploy to Staging') {
-//             when {
-//                 branch 'dev'
-//             }
+//
             steps {
                 script {
                     echo "Deploying to staging environment..."
