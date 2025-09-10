@@ -74,13 +74,13 @@ pipeline {
 //         }
 
         stage('Code Quality Analysis') {
-            when {
-                anyOf {
-                    branch 'main'
-                    branch 'dev'
-                    changeRequest()
-                }
-            }
+//             when {
+//                 anyOf {
+//                     branch 'main'
+//                     branch 'dev'
+//                     changeRequest()
+//                 }
+//             }
             steps {
                 script {
                     echo "Running code quality checks..."
@@ -96,12 +96,12 @@ pipeline {
         }
 
         stage('Security Scan') {
-            when {
-                anyOf {
-                    branch 'main'
-                    branch 'dev'
-                }
-            }
+//             when {
+//                 anyOf {
+//                     branch 'main'
+//                     branch 'dev'
+//                 }
+//             }
             steps {
                 script {
                     echo "Running security scan..."
@@ -117,12 +117,12 @@ pipeline {
         }
 
         stage ("Increment Version") {
-            when {
-                anyOf {
-                    branch 'main'
-                    branch 'dev'
-                }
-            }
+//             when {
+//                 anyOf {
+//                     branch 'main'
+//                     branch 'dev'
+//                 }
+//             }
             steps {
                 script {
                     echo "Incrementing version..."
@@ -157,12 +157,12 @@ pipeline {
         }
 
         stage('Commit Version Update') {
-            when {
-                anyOf {
-                    branch 'main'
-                    branch 'dev'
-                }
-            }
+//             when {
+//                 anyOf {
+//                     branch 'main'
+//                     branch 'dev'
+//                 }
+//             }
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: "github-credential", passwordVariable: 'PASS', usernameVariable: 'USER')]) {
@@ -196,12 +196,12 @@ pipeline {
         }
 
         stage("Build Jar") {
-            when {
-                anyOf {
-                    branch 'main'
-                    branch 'dev'
-                }
-            }
+//             when {
+//                 anyOf {
+//                     branch 'main'
+//                     branch 'dev'
+//                 }
+//             }
             steps {
                 script {
                     echo "Building JAR file..."
@@ -214,12 +214,12 @@ pipeline {
         }
 
         stage("Build and Push Docker Image") {
-            when {
-                anyOf {
-                    branch 'main'
-                    branch 'dev'
-                }
-            }
+//             when {
+//                 anyOf {
+//                     branch 'main'
+//                     branch 'dev'
+//                 }
+//             }
             steps {
                 script {
                     echo "Building Docker image: ${DOCKER_REGISTRY}/${APP_NAME}:${IMAGE_NAME}"
@@ -265,9 +265,9 @@ pipeline {
         }
 
         stage('Deploy to Staging') {
-            when {
-                branch 'dev'
-            }
+//             when {
+//                 branch 'dev'
+//             }
             steps {
                 script {
                     echo "Deploying to staging environment..."
@@ -278,9 +278,9 @@ pipeline {
         }
 
         stage('Deploy to Production') {
-            when {
-                branch 'main'
-            }
+//             when {
+//                 branch 'main'
+//             }
             steps {
                 input message: 'Deploy to Production?', ok: 'Deploy'
                 script {
