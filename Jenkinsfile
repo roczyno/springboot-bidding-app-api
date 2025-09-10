@@ -23,22 +23,23 @@ pipeline {
             }
         }
 
-        stage('Commit Version update') {
-            steps {
-                script {
-
-                    withCredentials([usernamePassword(credentialsId: "github-credential", passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-                        sh 'git config user.email "jenkins@gmail.com"'
-                        sh 'git config user.name "jenkins"'
-                        sh 'git status'
-                        sh 'git branch'
-                        sh "git add ."
-                        sh 'git commit -m "ci: version bump" || echo "No changes to commit"'
-                        sh "git push origin main"
+         stage('Commit Version update'){
+                    steps{
+                        script {
+                            withCredentials([usernamePassword(credentials,"github-credential",passwordVariable:'PASS',usernameVariable:'USER')]){
+                                sh 'git config user.email "jenkins@gmail.com"'
+                                sh 'git config user.name "jenkins"'
+                                sh 'git status'
+                                sh 'git branch'
+                                sh 'git config'
+                                sh" git remote set-url origin https://${USER}:${PASS}@github.com/roczyno/java-project-management-api.git"
+                                sh 'git add .'
+                                sh 'git commit -m "ci: version bump"'
+                                sh 'git push origin HEAD:main'
+                            }
+                        }
                     }
                 }
-            }
-        }
 
         stage("Build Jar") {
             steps {
